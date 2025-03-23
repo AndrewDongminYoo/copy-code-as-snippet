@@ -8,6 +8,7 @@ suite("Copy Code as Snippet Extension Test Suite", () => {
   let context: vscode.ExtensionContext;
   let clipboardSpy: sinon.SinonStub;
   let showInfoMessageSpy: sinon.SinonStub;
+  let originalClipboard: typeof vscode.env.clipboard;
 
   setup(() => {
     // Create a mock extension context
@@ -83,15 +84,30 @@ suite("Copy Code as Snippet Extension Test Suite", () => {
       },
     };
 
-    // Spy on clipboard writeText
-    clipboardSpy = sinon.stub(vscode.env.clipboard, "writeText").resolves();
+    // 원본 clipboard 저장
+    originalClipboard = vscode.env.clipboard;
+    // vscode.env.clipboard 전체를 stub 객체로 교체
+    Object.defineProperty(vscode.env, "clipboard", {
+      configurable: true,
+      writable: true,
+      value: {
+        writeText: sinon.stub().resolves(),
+      },
+    });
+    // 교체된 writeText 메서드를 spy로 사용
+    clipboardSpy = vscode.env.clipboard.writeText as sinon.SinonStub;
 
-    // Spy on showInformationMessage
+    // 나머지 spy 설정
     showInfoMessageSpy = sinon.stub(vscode.window, "showInformationMessage");
   });
 
   teardown(() => {
-    clipboardSpy.restore();
+    // vscode.env.clipboard 원래 객체로 복원
+    Object.defineProperty(vscode.env, "clipboard", {
+      configurable: true,
+      writable: true,
+      value: originalClipboard,
+    });
     showInfoMessageSpy.restore();
   });
 

@@ -14,8 +14,8 @@
   "contributes": {
     "commands": [
       {
-        "command": "copy-code-as-snippet.helloWorld",
-        "title": "Hello World"
+        "command": "copy-code-as-snippet.copy",
+        "title": "Copy Code as Snippet"
       }
     ]
   },

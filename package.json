@@ -2,7 +2,7 @@
   "name": "copy-code-as-snippet",
   "displayName": "Copy Code as Snippet",
   "description": "Extension that copies the contents of the current file to the clipboard in Markdown code block format",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "publisher": "dongminyu",
   "author": "Dongmin Yu <ydm2790@gmail.com> (https://github.com/AndrewDongminYoo)",
   "license": "MIT",
@@ -12,10 +12,10 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/AndrewDongminYoo/turbo-flutter-log"
+    "url": "https://github.com/AndrewDongminYoo/copy-code-as-snippet"
   },
   "bugs": {
-    "url": "https://github.com/AndrewDongminYoo/turbo-flutter-log/issues",
+    "url": "https://github.com/AndrewDongminYoo/copy-code-as-snippet/issues",
     "email": "ydm2790@gmail.com"
   },
   "categories": [

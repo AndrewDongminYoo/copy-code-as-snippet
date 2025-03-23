@@ -1,71 +1,85 @@
-# copy-code-as-snippet README
+# Copy Code as Snippet
 
-This is the README for your extension "copy-code-as-snippet". After writing up a brief description, we recommend including the following sections.
+A Visual Studio Code extension that allows you to copy the entire content of a file as a Markdown code snippet with language and file path information.
 
 ## Features
 
-Describe specific features of your extension including screenshots of your extension in action. Image paths are relative to this README file.
+- Copy the entire file content as a Markdown code snippet
+- Automatically includes the language identifier based on the file type
+- Includes the relative file path from the workspace root
+- Special handling for certain file types (e.g., Android build.gradle files are marked as Groovy)
 
-For example if there is an image subfolder under your extension project workspace:
+## Usage
 
-\!\[feature X\]\(images/feature-x.png\)
+1. Open any file in VS Code
+2. Run the command "Copy Code as Snippet" using one of these methods:
 
-> Tip: Many popular extensions utilize animations. This is an excellent way to show off your extension! We recommend short, focused animations that are easy to follow.
+   - Press the keyboard shortcut (if configured)
+   - Open the Command Palette (`Ctrl+Shift+P` or `Cmd+Shift+P`) and search for "Copy Code as Snippet"
+   - Right-click in the editor and select "Copy Code as Snippet" (if configured in context menu)
+
+3. The code will be copied to your clipboard in the following format:
+
+   ````
+   ```language:path/to/file
+   file content
+   ```
+   ````
+
+4. Paste the snippet wherever you need it (documentation, chat, etc.)
+
+## Why Use This Extension?
+
+This extension is particularly useful for:
+
+- Sharing code in documentation
+- Providing context in technical discussions
+- Creating code examples with proper file path references
+- Preparing code snippets for AI assistants that benefit from file path context
 
 ## Requirements
 
-If you have any requirements or dependencies, add a section describing those and how to install and configure them.
+No special requirements or dependencies.
 
 ## Extension Settings
 
-Include if your extension adds any VS Code settings through the `contributes.configuration` extension point.
-
-For example:
-
-This extension contributes the following settings:
-
-- `myExtension.enable`: Enable/disable this extension.
-- `myExtension.thing`: Set to `blah` to do something.
+This extension does not contribute any settings yet.
 
 ## Known Issues
 
-Calling out known issues can help limit users opening duplicate issues against your extension.
+None at this time. Please report any issues on the GitHub repository.
 
 ## Release Notes
 
-Users appreciate release notes as you update your extension.
-
 ### 1.0.0
 
-Initial release of ...
-
-### 1.0.1
-
-Fixed issue #.
-
-### 1.1.0
-
-Added features X, Y, and Z.
+- Initial release
+- Support for copying entire file content as a Markdown code snippet with language and path information
 
 ---
 
-## Following extension guidelines
+## Development
 
-Ensure that you've read through the extensions guidelines and follow the best practices for creating your extension.
+### Building the Extension
 
-- [Extension Guidelines](https://code.visualstudio.com/api/references/extension-guidelines)
+```bash
+npm install
+npm run compile
+```
 
-## Working with Markdown
+### Testing the Extension
 
-You can author your README using Visual Studio Code. Here are some useful editor keyboard shortcuts:
+- Press `F5` to open a new window with your extension loaded
+- Run the command "Copy Code as Snippet"
+- Verify the copied content in your clipboard
 
-- Split the editor (`Cmd+\` on macOS or `Ctrl+\` on Windows and Linux).
-- Toggle preview (`Shift+Cmd+V` on macOS or `Shift+Ctrl+V` on Windows and Linux).
-- Press `Ctrl+Space` (Windows, Linux, macOS) to see a list of Markdown snippets.
+### Publishing
 
-## For more information
+```bash
+vsce package
+vsce publish
+```
 
-- [Visual Studio Code's Markdown Support](http://code.visualstudio.com/docs/languages/markdown)
-- [Markdown Syntax Reference](https://help.github.com/articles/markdown-basics/)
+## License
 
-**Enjoy!**
+[MIT](LICENSE)

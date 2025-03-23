@@ -3,11 +3,17 @@
   "displayName": "Copy Code as Snippet",
   "description": "Extension that copies the contents of the current file to the clipboard in Markdown code block format",
   "version": "0.0.1",
+  "author": "Dongmin Yu <ydm2790@gmail.com> (https://github.com/AndrewDongminYoo)",
+  "license": "MIT",
+  "icon": "images/COPY.png",
   "engines": {
     "vscode": "^1.98.0"
   },
   "categories": [
-    "Other"
+    "AI",
+    "Other",
+    "Programming Languages",
+    "Snippets"
   ],
   "activationEvents": [],
   "main": "./dist/extension.js",

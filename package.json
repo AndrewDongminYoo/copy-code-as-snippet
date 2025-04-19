@@ -2,7 +2,7 @@
   "name": "copy-code-as-snippet",
   "displayName": "Copy Code as Snippet",
   "description": "Extension that copies the contents of the current file to the clipboard in Markdown code block format",
-  "version": "0.0.2",
+  "version": "1.1.0",
   "publisher": "dongminyu",
   "author": "Dongmin Yu <ydm2790@gmail.com> (https://github.com/AndrewDongminYoo)",
   "license": "MIT",

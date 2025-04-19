@@ -32,7 +32,27 @@
         "command": "copy-code-as-snippet.copy",
         "title": "Copy Code as Snippet"
       }
-    ]
+    ],
+    "configuration": {
+      "title": "Copy Code as Snippet",
+      "properties": {
+        "copy-code-as-snippet.includeFilePath": {
+          "type": "boolean",
+          "default": true,
+          "description": "Whether to include the file path in the snippet"
+        },
+        "copy-code-as-snippet.format": {
+          "type": "string",
+          "enum": [
+            "markdown",
+            "plain",
+            "html"
+          ],
+          "default": "markdown",
+          "description": "Code snippet format (markdown, plain, html)"
+        }
+      }
+    }
   },
   "scripts": {
     "vscode:prepublish": "yarn run package",

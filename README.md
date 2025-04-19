@@ -1,60 +1,79 @@
 # Copy Code as Snippet
 
-A Visual Studio Code extension that allows you to copy the entire content of a file as a Markdown code snippet with language and file path information.
+A Visual Studio Code extension that allows you to copy selected code or the entire content of a file as a Markdown, HTML, or plain text code snippet with language and file path information.
+
+![Demo](images/copy-as-code-snippet-demo.gif)
 
 ## Features
 
-- Copy the entire file content as a Markdown code snippet
-- Automatically includes the language identifier based on the file type
-- Includes the relative file path from the workspace root
-- Special handling for certain file types (e.g., Android build.gradle files are marked as Groovy)
+- Copy selected code or the entire file content
+- Automatically includes the language identifier based on file type
+- Optionally includes the relative file path from the workspace
+- Supports Markdown, HTML, and plain text snippet formats
+- Handles special cases (e.g., `build.gradle` → `groovy`, `Dockerfile`, `docker-compose.yaml`)
+- Clipboard-ready output for pasting into docs, chats, or markdown editors
 
 ## Usage
 
 1. Open any file in VS Code
-2. Run the command "Copy Code as Snippet" using one of these methods:
-
+2. Run the command **"Copy Code as Snippet"** using one of these methods:
    - Press the keyboard shortcut (if configured)
    - Open the Command Palette (`Ctrl+Shift+P` or `Cmd+Shift+P`) and search for "Copy Code as Snippet"
-   - Right-click in the editor and select "Copy Code as Snippet" (if configured in context menu)
+   - Right-click in the editor and select "Copy Code as Snippet" (if added to context menu)
+3. The snippet will be copied to your clipboard in the selected format:
 
-3. The code will be copied to your clipboard in the following format:
+<details>
+<summary>Example (Markdown with file path)</summary>
 
-   ````
-   ```language:path/to/file
-   file content
-   ```
-   ````
+````markdown
+```typescript:src/extension.ts
+export function activate(context: vscode.ExtensionContext) {
+  // ...
+}
+```
+````
 
-4. Paste the snippet wherever you need it (documentation, chat, etc.)
+</details>
 
 ## Why Use This Extension?
 
 This extension is particularly useful for:
 
-- Sharing code in documentation
-- Providing context in technical discussions
-- Creating code examples with proper file path references
-- Preparing code snippets for AI assistants that benefit from file path context
+- Creating rich code examples for documentation and presentations
+- Sharing code in chats and forums with language-aware formatting
+- Providing context to AI assistants with file-level information
+- Pasting syntax-highlighted snippets in HTML/Markdown documents
 
 ## Requirements
 
-No special requirements or dependencies.
+No dependencies or special requirements.
 
 ## Extension Settings
 
-This extension does not contribute any settings yet.
+| Setting                                | Type                                   | Default    | Description                                              |
+| -------------------------------------- | -------------------------------------- | ---------- | -------------------------------------------------------- |
+| `copy-code-as-snippet.includeFilePath` | `boolean`                              | `true`     | Whether to include the relative file path in the snippet |
+| `copy-code-as-snippet.format`          | `string` (`markdown`, `html`, `plain`) | `markdown` | Output format for the snippet                            |
 
 ## Known Issues
 
-None at this time. Please report any issues on the GitHub repository.
+None at this time. Please report any issues via [GitHub Issues](https://github.com/your-repo-url/issues).
 
 ## Release Notes
+
+### 1.1.0
+
+- Added support for:
+  - Snippet format options: `markdown`, `html`, and `plain text`
+  - Selecting code instead of copying the full file
+  - Customizable settings for file path inclusion and output format
+- Improved workspace-relative path detection in multi-root environments
+- Improved HTML escaping for enhanced security
 
 ### 1.0.0
 
 - Initial release
-- Support for copying entire file content as a Markdown code snippet with language and path information
+- Support for copying entire file content as a Markdown code snippet with language and file path information
 
 ---
 
@@ -69,9 +88,9 @@ npm run compile
 
 ### Testing the Extension
 
-- Press `F5` to open a new window with your extension loaded
+- Press `F5` to open a new VS Code window with your extension loaded
 - Run the command "Copy Code as Snippet"
-- Verify the copied content in your clipboard
+- Verify that the clipboard contains the expected snippet format
 
 ### Publishing
 

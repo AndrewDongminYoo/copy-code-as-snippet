@@ -199,7 +199,12 @@ function createHtmlSnippet(
   const filenameAttr = includePath
     ? ` data-filename="${escapeHtml(relativePath)}"`
     : "";
-  return `<pre><code class="${classAttr}"${filenameAttr}>${escapeHtml(content)}</code></pre>`;
+  return `
+<pre>
+  <code class="${classAttr}"${filenameAttr}>
+  ${escapeHtml(content)}
+  </code>
+</pre>`;
 }
 
 /**

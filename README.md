@@ -98,6 +98,13 @@ None at this time. Please report any issues via [GitHub Issues](https://github.c
 
 ## Release Notes
 
+### 1.2.0
+
+- Added AI-friendly Markdown mode with file/language/range header (opt-in)
+- Added Markdown fence strategies: default, auto-upgrade when ``` appears, or tilde fences
+- Added large-file prompt to choose full copy or head/tail sampling
+- Default settings keep 1.1.x behavior unchanged
+
 ### 1.1.0
 
 - Added support for:

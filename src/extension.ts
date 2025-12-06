@@ -12,6 +12,8 @@ const enum SnippetFormat {
   Plain = "plain",
 }
 
+type FenceStrategy = "default" | "autoUpgrade" | "tilde";
+
 /**
  * Called when the extension is activated.
  * Registers the command and performs initialization.
@@ -48,12 +50,6 @@ export function activate(context: vscode.ExtensionContext) {
       // Detect language
       const language = detectLanguage(filePath, document.languageId);
 
-      // Get selected or full content
-      const selection = editor.selection;
-      const fileContent = selection.isEmpty
-        ? document.getText()
-        : document.getText(selection);
-
       // Read configuration
       const config = vscode.workspace.getConfiguration("copy-code-as-snippet");
       const includeFilePath = config.get<boolean>("includeFilePath", true);
@@ -61,15 +57,68 @@ export function activate(context: vscode.ExtensionContext) {
         "format",
         SnippetFormat.Markdown,
       );
+      const fenceStrategy = config.get<FenceStrategy>(
+        "markdown.fenceStrategy",
+        "default",
+      );
+      const aiModeEnabled = config.get<boolean>("aiMode.enabled", false);
+      const lineThreshold = config.get<number>("largeFile.lineThreshold", 1000);
+      const largeFilePromptEnabled = config.get<boolean>(
+        "largeFile.promptEnabled",
+        false,
+      );
+
+      // Determine content and range
+      const selection = editor.selection;
+      const hasSelection = !selection.isEmpty;
+      const fullContent = document.getText();
+      const totalLines =
+        document.lineCount || fullContent.split(/\r?\n/).length || 1;
+      let fileContent = hasSelection
+        ? document.getText(selection)
+        : fullContent;
+      let rangeText = hasSelection
+        ? `lines ${selection.start.line + 1}-${selection.end.line + 1} (selection)`
+        : `lines 1-${totalLines} (full file)`;
+
+      if (
+        largeFilePromptEnabled &&
+        !hasSelection &&
+        totalLines > lineThreshold
+      ) {
+        const choice = await vscode.window.showQuickPick(
+          [
+            "Copy full file",
+            "Copy head & tail (first 30 + last 30 lines)",
+            "Cancel",
+          ],
+          {
+            placeHolder: `File has ${totalLines} lines (threshold ${lineThreshold}). Choose snippet scope.`,
+          },
+        );
+
+        if (!choice || choice === "Cancel") {
+          return;
+        }
+
+        if (choice.startsWith("Copy head")) {
+          fileContent = createHeadTailSample(fullContent);
+          rangeText = `lines 1-${totalLines} (head/tail sample)`;
+        }
+      }
 
       // Generate snippet
-      const snippet = createSnippet(
-        snippetFormat,
+      const snippet = createSnippet({
+        format: snippetFormat,
         language,
         relativePath,
-        fileContent,
+        content: fileContent,
         includeFilePath,
-      );
+        fenceStrategy,
+        aiModeEnabled:
+          snippetFormat === SnippetFormat.Markdown && aiModeEnabled,
+        rangeText,
+      });
 
       try {
         await vscode.env.clipboard.writeText(snippet);
@@ -128,57 +177,79 @@ function detectLanguage(filePath: string, defaultLanguage: string): string {
  * @param includeFilePath Whether to include file path in the snippet
  * @returns Formatted snippet string
  */
-function createSnippet(
-  format: SnippetFormat,
-  language: string,
-  relativePath: string,
-  content: string,
-  includeFilePath: boolean,
-): string {
-  switch (format) {
+function createSnippet(options: {
+  format: SnippetFormat;
+  language: string;
+  relativePath: string;
+  content: string;
+  includeFilePath: boolean;
+  fenceStrategy: FenceStrategy;
+  aiModeEnabled: boolean;
+  rangeText: string;
+}): string {
+  switch (options.format) {
     case SnippetFormat.Markdown:
-      return createMarkdownSnippet(
-        language,
-        relativePath,
-        content,
-        includeFilePath,
-      );
+      return createMarkdownSnippet({
+        language: options.language,
+        relativePath: options.relativePath,
+        content: options.content,
+        includePath: options.includeFilePath,
+        fenceStrategy: options.fenceStrategy,
+        aiModeEnabled: options.aiModeEnabled,
+        rangeText: options.rangeText,
+      });
     case SnippetFormat.Html:
       return createHtmlSnippet(
-        language,
-        relativePath,
-        content,
-        includeFilePath,
+        options.language,
+        options.relativePath,
+        options.content,
+        options.includeFilePath,
       );
     case SnippetFormat.Plain:
-      return content;
+      return options.content;
     default:
-      return createMarkdownSnippet(
-        language,
-        relativePath,
-        content,
-        includeFilePath,
-      );
+      return createMarkdownSnippet({
+        language: options.language,
+        relativePath: options.relativePath,
+        content: options.content,
+        includePath: options.includeFilePath,
+        fenceStrategy: options.fenceStrategy,
+        aiModeEnabled: options.aiModeEnabled,
+        rangeText: options.rangeText,
+      });
   }
 }
 
 /**
  * Creates a Markdown-formatted code block.
- * @param language Language identifier
- * @param relativePath Relative file path
- * @param content Code content
- * @param includePath Whether to include file path
- * @returns Markdown string
  */
-function createMarkdownSnippet(
-  language: string,
-  relativePath: string,
-  content: string,
-  includePath: boolean,
-): string {
-  return includePath
-    ? `\`\`\`${language}:${relativePath}\n${content}\n\`\`\``
-    : `\`\`\`${language}\n${content}\n\`\`\``;
+function createMarkdownSnippet(options: {
+  language: string;
+  relativePath: string;
+  content: string;
+  includePath: boolean;
+  fenceStrategy: FenceStrategy;
+  aiModeEnabled: boolean;
+  rangeText: string;
+}): string {
+  const fence = resolveFence(options.fenceStrategy, options.content);
+
+  if (options.aiModeEnabled) {
+    const headerParts = [
+      options.includePath ? `### File: ${options.relativePath}` : undefined,
+      `### Language: ${options.language}`,
+      options.rangeText ? `### Range: ${options.rangeText}` : undefined,
+    ].filter(Boolean);
+
+    const header = headerParts.join("\n");
+    return `${header}\n\n${fence}${options.language}\n${options.content}\n${fence}`;
+  }
+
+  const header = options.includePath
+    ? `${options.language}:${options.relativePath}`
+    : options.language;
+
+  return `${fence}${header}\n${options.content}\n${fence}`;
 }
 
 /**
@@ -219,6 +290,36 @@ function escapeHtml(text: string): string {
     .replace(/>/g, "&gt;")
     .replace(/"/g, "&quot;")
     .replace(/'/g, "&#039;");
+}
+
+function resolveFence(fenceStrategy: FenceStrategy, content: string): string {
+  if (fenceStrategy === "tilde") {
+    return "~~~";
+  }
+
+  if (fenceStrategy === "autoUpgrade" && content.includes("```")) {
+    return "````";
+  }
+
+  return "```";
+}
+
+function createHeadTailSample(
+  content: string,
+  headLines = 30,
+  tailLines = 30,
+): string {
+  const lines = content.split(/\r?\n/);
+  if (lines.length <= headLines + tailLines) {
+    return content;
+  }
+
+  const omitted = lines.length - headLines - tailLines;
+  const head = lines.slice(0, headLines);
+  const tail = lines.slice(-tailLines);
+  const marker = `... ${omitted} lines omitted ...`;
+
+  return [...head, marker, ...tail].join("\n");
 }
 
 /**

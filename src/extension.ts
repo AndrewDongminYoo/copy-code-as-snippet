@@ -87,11 +87,7 @@ export function activate(context: vscode.ExtensionContext) {
         totalLines > lineThreshold
       ) {
         const choice = await vscode.window.showQuickPick(
-          [
-            "Copy full file",
-            "Copy head & tail (first 30 + last 30 lines)",
-            "Cancel",
-          ],
+          ["Copy full file", "Copy head & tail (select ranges...)", "Cancel"],
           {
             placeHolder: `File has ${totalLines} lines (threshold ${lineThreshold}). Choose snippet scope.`,
           },
@@ -101,9 +97,22 @@ export function activate(context: vscode.ExtensionContext) {
           return;
         }
 
-        if (choice.startsWith("Copy head")) {
-          fileContent = createHeadTailSample(fullContent);
-          rangeText = `lines 1-${totalLines} (head/tail sample)`;
+        if (choice.startsWith("Copy full")) {
+          // Proceed as is (do nothing)
+        } else if (choice.startsWith("Copy head")) {
+          // ✅ Ask the user once more for the number of head/tail lines
+          const headTail = await pickHeadTailLines(30, 30);
+          if (!headTail) {
+            // If the user canceled midway
+            return;
+          }
+
+          fileContent = createHeadTailSample(
+            fullContent,
+            headTail.head,
+            headTail.tail,
+          );
+          rangeText = `lines 1-${totalLines} (head/tail sample: head ${headTail.head}, tail ${headTail.tail})`;
         }
       }
 
@@ -320,6 +329,99 @@ function createHeadTailSample(
   const marker = `... ${omitted} lines omitted ...`;
 
   return [...head, marker, ...tail].join("\n");
+}
+
+interface HeadTailPreset extends vscode.QuickPickItem {
+  head: number;
+  tail: number;
+}
+
+/**
+ * Prompts the user to select/enter the number of head/tail lines.
+ * Returns undefined if the user cancels.
+ */
+async function pickHeadTailLines(
+  defaultHead = 30,
+  defaultTail = 30,
+): Promise<{ head: number; tail: number } | undefined> {
+  const presets: HeadTailPreset[] = [
+    {
+      label: "Head 10 / Tail 10",
+      description: "First 10 lines + Last 10 lines",
+      head: 10,
+      tail: 10,
+    },
+    {
+      label: "Head 20 / Tail 20",
+      description: "First 20 lines + Last 20 lines",
+      head: 20,
+      tail: 20,
+    },
+    {
+      label: "Head 30 / Tail 30 (default)",
+      description: "First 30 lines + Last 30 lines",
+      head: 30,
+      tail: 30,
+    },
+    {
+      label: "Custom...",
+      description: "Enter the head/tail line count directly.",
+      head: -1,
+      tail: -1,
+    },
+  ];
+
+  const picked = await vscode.window.showQuickPick(presets, {
+    placeHolder: "Select the number of head and tail lines.",
+  });
+
+  if (!picked) {
+    // If the user cancels QuickPick
+    return undefined;
+  }
+
+  // Select preset (not custom)
+  if (picked.head >= 0 && picked.tail >= 0) {
+    return { head: picked.head, tail: picked.tail };
+  }
+
+  // === Custom Input ===
+  const headInput = await vscode.window.showInputBox({
+    prompt: "Enter the number of head (front) lines.",
+    value: String(defaultHead),
+    validateInput: (value) => {
+      const n = Number(value);
+      if (!Number.isInteger(n) || n <= 0) {
+        return "Enter an integer greater than 0.";
+      }
+      return undefined;
+    },
+  });
+
+  if (!headInput) {
+    return undefined;
+  }
+
+  const tailInput = await vscode.window.showInputBox({
+    prompt: "Enter the number of tail (back) lines.",
+    value: String(defaultTail),
+    validateInput: (value) => {
+      const n = Number(value);
+      if (!Number.isInteger(n) || n <= 0) {
+        return "Enter an integer greater than 0.";
+      }
+      return undefined;
+    },
+  });
+
+  if (!tailInput) {
+    return undefined;
+  }
+
+  const head = Number(headInput);
+  const tail = Number(tailInput);
+
+  return { head, tail };
 }
 
 /**

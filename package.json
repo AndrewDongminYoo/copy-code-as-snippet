@@ -50,6 +50,31 @@
           ],
           "default": "markdown",
           "description": "Code snippet format (markdown, plain, html)"
+        },
+        "copy-code-as-snippet.aiMode.enabled": {
+          "type": "boolean",
+          "default": false,
+          "description": "Produce AI-friendly Markdown snippets with header metadata for file/language/range"
+        },
+        "copy-code-as-snippet.markdown.fenceStrategy": {
+          "type": "string",
+          "enum": [
+            "default",
+            "autoUpgrade",
+            "tilde"
+          ],
+          "default": "default",
+          "description": "Markdown fence style: keep default, auto-upgrade to four backticks when content contains ``` , or always use ~~~"
+        },
+        "copy-code-as-snippet.largeFile.lineThreshold": {
+          "type": "number",
+          "default": 1000,
+          "description": "Line count threshold to treat a file as large when prompting for head/tail sampling"
+        },
+        "copy-code-as-snippet.largeFile.promptEnabled": {
+          "type": "boolean",
+          "default": false,
+          "description": "When true and lines exceed threshold, prompt to copy full file or head/tail sample"
         }
       }
     }

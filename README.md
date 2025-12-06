@@ -14,7 +14,7 @@ A Visual Studio Code extension that allows you to copy selected code or the enti
 - Clipboard-ready output for pasting into docs, chats, or markdown editors
 - AI-friendly Markdown mode (opt-in) that adds file/language/range headers
 - Fence strategy controls to avoid broken Markdown when code includes triple backticks or to force `~~~`
-- Optional head/tail sampling prompt for very large files
+- Optional head/tail sampling prompt for very large files, with presets and custom head/tail counts
 
 ## Usage
 
@@ -60,13 +60,14 @@ export function activate(context: vscode.ExtensionContext) {
 
 ````markdown
 ```javascript:src/huge-file.js
-// first 30 lines...
+// first N lines...
 ... 9,940 lines omitted ...
-// last 30 lines...
+// last M lines...
 ```
 ````
 
 </details>
+When prompted on large files, choose a preset (e.g., Head 10 / Tail 10) or enter custom head/tail line counts.
 
 ## Why Use This Extension?
 
@@ -90,7 +91,7 @@ No dependencies or special requirements.
 | `copy-code-as-snippet.aiMode.enabled`          | `boolean`                                    | `false`    | Adds Markdown headers (file, language, range) and uses language-only fences (markdown only)                        |
 | `copy-code-as-snippet.markdown.fenceStrategy`  | `string` (`default`, `autoUpgrade`, `tilde`) | `default`  | Fence style: keep triple backticks, auto-upgrade to four backticks when content has backticks, or always use `~~~` |
 | `copy-code-as-snippet.largeFile.lineThreshold` | `number`                                     | `1000`     | Line count threshold to treat a file as large                                                                      |
-| `copy-code-as-snippet.largeFile.promptEnabled` | `boolean`                                    | `false`    | When true and over threshold, prompt to copy full file or a head/tail sample                                       |
+| `copy-code-as-snippet.largeFile.promptEnabled` | `boolean`                                    | `false`    | When true and over threshold, prompt to copy full file or a head/tail sample (pick presets or enter custom counts) |
 
 ## Known Issues
 
@@ -102,7 +103,7 @@ None at this time. Please report any issues via [GitHub Issues](https://github.c
 
 - Added AI-friendly Markdown mode with file/language/range header (opt-in)
 - Added Markdown fence strategies: default, auto-upgrade when ``` appears, or tilde fences
-- Added large-file prompt to choose full copy or head/tail sampling
+- Added large-file prompt to choose full copy or head/tail sampling, including presets or custom head/tail counts
 - Default settings keep 1.1.x behavior unchanged
 
 ### 1.1.0

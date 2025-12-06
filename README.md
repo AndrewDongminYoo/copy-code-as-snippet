@@ -12,6 +12,9 @@ A Visual Studio Code extension that allows you to copy selected code or the enti
 - Supports Markdown, HTML, and plain text snippet formats
 - Handles special cases (e.g., `build.gradle` → `groovy`, `Dockerfile`, `docker-compose.yaml`)
 - Clipboard-ready output for pasting into docs, chats, or markdown editors
+- AI-friendly Markdown mode (opt-in) that adds file/language/range headers
+- Fence strategy controls to avoid broken Markdown when code includes triple backticks or to force `~~~`
+- Optional head/tail sampling prompt for very large files
 
 ## Usage
 
@@ -35,6 +38,36 @@ export function activate(context: vscode.ExtensionContext) {
 
 </details>
 
+<details>
+<summary>Example (AI mode header + range)</summary>
+
+````markdown
+### File: src/extension.ts
+
+### Language: typescript
+
+### Range: lines 12-34 (selection)
+
+```typescript
+// selected code...
+```
+````
+
+</details>
+
+<details>
+<summary>Example (large file head/tail sample)</summary>
+
+````markdown
+```javascript:src/huge-file.js
+// first 30 lines...
+... 9,940 lines omitted ...
+// last 30 lines...
+```
+````
+
+</details>
+
 ## Why Use This Extension?
 
 This extension is particularly useful for:
@@ -50,10 +83,14 @@ No dependencies or special requirements.
 
 ## Extension Settings
 
-| Setting                                | Type                                   | Default    | Description                                              |
-| -------------------------------------- | -------------------------------------- | ---------- | -------------------------------------------------------- |
-| `copy-code-as-snippet.includeFilePath` | `boolean`                              | `true`     | Whether to include the relative file path in the snippet |
-| `copy-code-as-snippet.format`          | `string` (`markdown`, `html`, `plain`) | `markdown` | Output format for the snippet                            |
+| Setting                                        | Type                                         | Default    | Description                                                                                                        |
+| ---------------------------------------------- | -------------------------------------------- | ---------- | ------------------------------------------------------------------------------------------------------------------ |
+| `copy-code-as-snippet.includeFilePath`         | `boolean`                                    | `true`     | Whether to include the relative file path in the snippet                                                           |
+| `copy-code-as-snippet.format`                  | `string` (`markdown`, `html`, `plain`)       | `markdown` | Output format for the snippet                                                                                      |
+| `copy-code-as-snippet.aiMode.enabled`          | `boolean`                                    | `false`    | Adds Markdown headers (file, language, range) and uses language-only fences (markdown only)                        |
+| `copy-code-as-snippet.markdown.fenceStrategy`  | `string` (`default`, `autoUpgrade`, `tilde`) | `default`  | Fence style: keep triple backticks, auto-upgrade to four backticks when content has backticks, or always use `~~~` |
+| `copy-code-as-snippet.largeFile.lineThreshold` | `number`                                     | `1000`     | Line count threshold to treat a file as large                                                                      |
+| `copy-code-as-snippet.largeFile.promptEnabled` | `boolean`                                    | `false`    | When true and over threshold, prompt to copy full file or a head/tail sample                                       |
 
 ## Known Issues
 

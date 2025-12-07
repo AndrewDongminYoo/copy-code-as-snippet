@@ -2,13 +2,13 @@
   "name": "copy-code-as-snippet",
   "displayName": "Copy Code as Snippet",
   "description": "Extension that copies the contents of the current file to the clipboard in Markdown code block format",
-  "version": "1.1.1",
+  "version": "1.2.0",
   "publisher": "dongminyu",
   "author": "Dongmin Yu <ydm2790@gmail.com> (https://github.com/AndrewDongminYoo)",
   "license": "MIT",
   "icon": "images/COPY.png",
   "engines": {
-    "vscode": "^1.98.0"
+    "vscode": "^1.106.1"
   },
   "repository": {
     "type": "git",
@@ -50,6 +50,31 @@
           ],
           "default": "markdown",
           "description": "Code snippet format (markdown, plain, html)"
+        },
+        "copy-code-as-snippet.aiMode.enabled": {
+          "type": "boolean",
+          "default": false,
+          "description": "Produce AI-friendly Markdown snippets with header metadata for file/language/range"
+        },
+        "copy-code-as-snippet.markdown.fenceStrategy": {
+          "type": "string",
+          "enum": [
+            "default",
+            "autoUpgrade",
+            "tilde"
+          ],
+          "default": "default",
+          "description": "Markdown fence style: keep default, auto-upgrade to four backticks when content contains ``` , or always use ~~~"
+        },
+        "copy-code-as-snippet.largeFile.lineThreshold": {
+          "type": "number",
+          "default": 1000,
+          "description": "Line count threshold to treat a file as large when prompting for head/tail sampling"
+        },
+        "copy-code-as-snippet.largeFile.promptEnabled": {
+          "type": "boolean",
+          "default": false,
+          "description": "When true and lines exceed threshold, prompt to copy full file or head/tail sample"
         }
       }
     }

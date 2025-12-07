@@ -409,28 +409,108 @@ suite("Copy Code as Snippet Extension Test Suite", () => {
         },
       ]);
 
-    const showQuickPickStub = sinon
-      .stub(vscode.window, "showQuickPick")
+    const showQuickPickStub = sinon.stub(vscode.window, "showQuickPick");
+    // First prompt: choose head/tail mode
+    showQuickPickStub
+      .onFirstCall()
       .resolves(
-        "Copy head & tail (first 30 + last 30 lines)" as unknown as vscode.QuickPickItem,
+        "Copy head & tail (select ranges...)" as unknown as vscode.QuickPickItem,
       );
+    // Second prompt: choose preset head/tail counts
+    showQuickPickStub.onSecondCall().resolves({
+      label: "Head 20 / Tail 20",
+      description: "First 20 lines + Last 20 lines",
+      head: 20,
+      tail: 20,
+    } as any);
 
     await vscode.commands.executeCommand("copy-code-as-snippet.copy");
 
     const expectedContent = [
-      ...contentLines.slice(0, 30),
-      "... 60 lines omitted ...",
-      ...contentLines.slice(-30),
+      ...contentLines.slice(0, 20),
+      "... 80 lines omitted ...",
+      ...contentLines.slice(-20),
     ].join("\n");
     const expectedSnippet =
       "```javascript:src/large.js\n" + expectedContent + "\n```";
 
     assert.strictEqual(clipboardSpy.calledOnce, true);
     assert.strictEqual(clipboardSpy.firstCall.args[0], expectedSnippet);
-    assert.strictEqual(showQuickPickStub.calledOnce, true);
+    assert.strictEqual(showQuickPickStub.callCount, 2);
 
     activeTextEditorStub.restore();
     workspaceFoldersStub.restore();
     showQuickPickStub.restore();
+  });
+
+  test("Should allow custom head/tail counts when sampling large files", async () => {
+    configurationValues["largeFile.promptEnabled"] = true;
+    configurationValues["largeFile.lineThreshold"] = 5;
+
+    const contentLines = Array.from({ length: 40 }, (_, i) => `line ${i + 1}`);
+    const fullContent = contentLines.join("\n");
+
+    const document = {
+      uri: { fsPath: "/workspace/project/src/custom-large.js" },
+      languageId: "javascript",
+      getText: () => fullContent,
+      lineCount: contentLines.length,
+    };
+    const selection = new vscode.Selection(
+      new vscode.Position(0, 0),
+      new vscode.Position(0, 0),
+    );
+    const editor = { document, selection };
+
+    const activeTextEditorStub = sinon
+      .stub(vscode.window, "activeTextEditor")
+      .value(editor);
+
+    const workspaceFoldersStub = sinon
+      .stub(vscode.workspace, "workspaceFolders")
+      .value([
+        {
+          uri: { fsPath: "/workspace/project" },
+          name: "project",
+          index: 0,
+        },
+      ]);
+
+    const showQuickPickStub = sinon.stub(vscode.window, "showQuickPick");
+    showQuickPickStub
+      .onFirstCall()
+      .resolves(
+        "Copy head & tail (select ranges...)" as unknown as vscode.QuickPickItem,
+      );
+    showQuickPickStub.onSecondCall().resolves({
+      label: "Custom...",
+      description: "Enter the head/tail line count directly.",
+      head: -1,
+      tail: -1,
+    } as any);
+
+    const showInputBoxStub = sinon.stub(vscode.window, "showInputBox");
+    showInputBoxStub.onFirstCall().resolves("5"); // head
+    showInputBoxStub.onSecondCall().resolves("7"); // tail
+
+    await vscode.commands.executeCommand("copy-code-as-snippet.copy");
+
+    const expectedContent = [
+      ...contentLines.slice(0, 5),
+      "... 28 lines omitted ...",
+      ...contentLines.slice(-7),
+    ].join("\n");
+    const expectedSnippet =
+      "```javascript:src/custom-large.js\n" + expectedContent + "\n```";
+
+    assert.strictEqual(clipboardSpy.calledOnce, true);
+    assert.strictEqual(clipboardSpy.firstCall.args[0], expectedSnippet);
+    assert.strictEqual(showQuickPickStub.callCount, 2);
+    assert.strictEqual(showInputBoxStub.callCount, 2);
+
+    activeTextEditorStub.restore();
+    workspaceFoldersStub.restore();
+    showQuickPickStub.restore();
+    showInputBoxStub.restore();
   });
 });

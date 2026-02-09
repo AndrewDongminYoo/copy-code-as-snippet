@@ -18,14 +18,14 @@ runtimes:
 lint:
   enabled:
     - oxipng@10.0.0
-    - checkov@3.2.495
-    - eslint@9.39.1
+    - checkov@3.2.500
+    - eslint@10.0.0
     - git-diff-check
-    - markdownlint@0.46.0
+    - markdownlint@0.47.0
     - osv-scanner@2.3.0
-    - prettier@3.7.4
+    - prettier@3.8.1
     - trufflehog@3.91.2
-    - yamllint@1.37.1
+    - yamllint@1.38.0
 actions:
   enabled:
     - trunk-announce

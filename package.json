@@ -107,7 +107,8 @@
     "webpack-cli": "^7.2.1"
   },
   "resolutions": {
-    "diff": ">=8.0.3"
+    "diff": ">=8.0.3",
+    "serialize-javascript": "^7.0.5"
   },
   "dependencies": {
     "diff": ">=9.0.0"

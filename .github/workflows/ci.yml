@@ -1,0 +1,75 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .node-version
+          cache: yarn
+
+      - run: yarn install --frozen-lockfile
+
+      - run: yarn lint
+
+      # tsc: catches type errors webpack's transpile step would miss
+      - run: yarn compile-tests
+
+      # webpack + ts-loader: the check that would have caught the
+      # typescript 7 breakage that shipped to main
+      - run: yarn compile
+
+  trunk:
+    name: Trunk Check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .node-version
+          cache: yarn
+
+      # eslint.config.mjs imports @typescript-eslint from node_modules,
+      # so trunk's eslint needs the project's deps installed
+      - run: yarn install --frozen-lockfile
+
+      # Persist downloaded linters/runtimes across runs
+      - uses: actions/cache@v6
+        with:
+          path: ~/.cache/trunk
+          key: trunk-${{ runner.os }}-${{ hashFiles('.trunk/trunk.yaml') }}
+
+      # Run the Trunk CLI directly rather than trunk-io/trunk-action: the
+      # action nests node20 actions/cache & setup-node whose deprecation
+      # warning we cannot clear. The launcher reads cli.version from
+      # .trunk/trunk.yaml. The repo is already clean, so check everything
+      # instead of only changed files (there is no hold-the-line baseline).
+      - name: Install Trunk
+        run: |
+          curl -fsSL https://trunk.io/releases/trunk -o "$RUNNER_TEMP/trunk"
+          chmod +x "$RUNNER_TEMP/trunk"
+
+      - name: Trunk Check
+        run: |
+          "$RUNNER_TEMP/trunk" check --all --ci
+
+  # `yarn test` is intentionally not run here: vscode-test needs a virtual
+  # display on Linux, and the suite is flaky ("command already exists" —
+  # activate() re-registers in setup() without a reliable teardown), so it
+  # would go red at random. Run it locally until the isolation leak is fixed.

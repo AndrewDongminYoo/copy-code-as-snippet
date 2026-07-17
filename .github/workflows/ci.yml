@@ -54,6 +54,9 @@ jobs:
         with:
           path: ~/.cache/trunk
           key: trunk-${{ runner.os }}-${{ hashFiles('.trunk/trunk.yaml') }}
+          # Without this, every linter bump re-downloads all of them
+          restore-keys: |
+            trunk-${{ runner.os }}-
 
       # Run the Trunk CLI directly rather than trunk-io/trunk-action: the
       # action nests node20 actions/cache & setup-node whose deprecation

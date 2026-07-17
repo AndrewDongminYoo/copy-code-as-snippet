@@ -45,6 +45,10 @@ jobs:
 
       - uses: trunk-io/trunk-action@v1
         with:
+          # The repo is already clean, so there is no hold-the-line
+          # baseline to protect — check everything rather than only the
+          # files a PR happens to touch.
+          check-mode: all
           # eslint.config.mjs imports @typescript-eslint from node_modules,
           # so trunk's eslint needs the project's deps installed
           setup-deps: true

@@ -1,0 +1,40 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: yarn
+
+      - run: yarn install --frozen-lockfile
+
+      - run: yarn lint
+
+      # tsc: catches type errors webpack's transpile step would miss
+      - run: yarn compile-tests
+
+      # webpack + ts-loader: the check that would have caught the
+      # typescript 7 breakage that shipped to main
+      - run: yarn compile
+
+  # `yarn test` is intentionally not run here: vscode-test needs a virtual
+  # display on Linux, and the suite is flaky ("command already exists" —
+  # activate() re-registers in setup() without a reliable teardown), so it
+  # would go red at random. Run it locally until the isolation leak is fixed.

@@ -8,6 +8,14 @@ on:
 permissions:
   contents: read
 
+# Opt every JS action onto Node 24 ahead of the June 2026 removal of
+# Node 20, including the ones nested inside trunk-action. This does NOT
+# silence the "forced to run on Node 24" warning — that comes from
+# trunk-action's own actions/cache & setup-node still declaring node20
+# and only clears when trunk-action bumps them upstream.
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
 concurrency:
   group: ci-${{ github.ref }}
   cancel-in-progress: true

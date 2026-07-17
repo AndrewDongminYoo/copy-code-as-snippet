@@ -34,6 +34,21 @@ jobs:
       # typescript 7 breakage that shipped to main
       - run: yarn compile
 
+  trunk:
+    name: Trunk Check
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      checks: write # post lint results as annotations
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: trunk-io/trunk-action@v1
+        with:
+          # eslint.config.mjs imports @typescript-eslint from node_modules,
+          # so trunk's eslint needs the project's deps installed
+          setup-deps: true
+
   # `yarn test` is intentionally not run here: vscode-test needs a virtual
   # display on Linux, and the suite is flaky ("command already exists" —
   # activate() re-registers in setup() without a reliable teardown), so it

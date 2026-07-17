@@ -8,14 +8,6 @@ on:
 permissions:
   contents: read
 
-# Opt every JS action onto Node 24 ahead of the June 2026 removal of
-# Node 20, including the ones nested inside trunk-action. This does NOT
-# silence the "forced to run on Node 24" warning — that comes from
-# trunk-action's own actions/cache & setup-node still declaring node20
-# and only clears when trunk-action bumps them upstream.
-env:
-  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
-
 concurrency:
   group: ci-${{ github.ref }}
   cancel-in-progress: true
@@ -45,21 +37,37 @@ jobs:
   trunk:
     name: Trunk Check
     runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      checks: write # post lint results as annotations
     steps:
       - uses: actions/checkout@v7
 
-      - uses: trunk-io/trunk-action@v1
+      - uses: actions/setup-node@v7
         with:
-          # The repo is already clean, so there is no hold-the-line
-          # baseline to protect — check everything rather than only the
-          # files a PR happens to touch.
-          check-mode: all
-          # eslint.config.mjs imports @typescript-eslint from node_modules,
-          # so trunk's eslint needs the project's deps installed
-          setup-deps: true
+          node-version-file: .node-version
+          cache: yarn
+
+      # eslint.config.mjs imports @typescript-eslint from node_modules,
+      # so trunk's eslint needs the project's deps installed
+      - run: yarn install --frozen-lockfile
+
+      # Persist downloaded linters/runtimes across runs
+      - uses: actions/cache@v6
+        with:
+          path: ~/.cache/trunk
+          key: trunk-${{ runner.os }}-${{ hashFiles('.trunk/trunk.yaml') }}
+
+      # Run the Trunk CLI directly rather than trunk-io/trunk-action: the
+      # action nests node20 actions/cache & setup-node whose deprecation
+      # warning we cannot clear. The launcher reads cli.version from
+      # .trunk/trunk.yaml. The repo is already clean, so check everything
+      # instead of only changed files (there is no hold-the-line baseline).
+      - name: Install Trunk
+        run: |
+          curl -fsSL https://trunk.io/releases/trunk -o "$RUNNER_TEMP/trunk"
+          chmod +x "$RUNNER_TEMP/trunk"
+
+      - name: Trunk Check
+        run: |
+          "$RUNNER_TEMP/trunk" check --all --ci
 
   # `yarn test` is intentionally not run here: vscode-test needs a virtual
   # display on Linux, and the suite is flaky ("command already exists" —

@@ -1,0 +1,20 @@
+[[IgnoredVulns]]
+id = "GHSA-mh99-v99m-4gvg"
+reason = """
+brace-expansion DoS (unbounded expansion length). Two major lines are present
+(2.1.2 via mocha -> glob -> minimatch@9, 5.0.7 via the hoisted eslint/glob/
+@vscode-test-cli minimatch@10 chain); classic Yarn (v1) resolutions cannot
+scope an override per-ancestor here - "mocha/**/brace-expansion" and
+"<ancestor>/**/brace-expansion" patterns were verified (2026-08-02) to add a
+new unused lockfile entry instead of overriding the existing one, for both
+package-name and resolved-version ancestor selectors. A single global
+override is unsafe: brace-expansion 2.x's CommonJS entry point exports the
+expand function directly (`module.exports = expandTop`), while 5.x exports a
+named `{ expand }` - forcing either major's consumer onto the other breaks
+its require() call shape. Both paths are devDependencies (mocha test runner,
+eslint) never bundled into the published extension, so exposure is limited to
+`yarn test`/`yarn lint` locally. Re-evaluate when Yarn's classic resolutions
+scoping is fixed, or migrate to Yarn Berry/pnpm overrides which handle this
+correctly (see apps-scripts, catfood-feeder in this workspace for the pnpm
+pattern already in use elsewhere).
+"""

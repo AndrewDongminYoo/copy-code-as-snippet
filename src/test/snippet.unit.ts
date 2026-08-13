@@ -1,6 +1,7 @@
 import * as assert from "assert";
 import { describe, it } from "node:test";
 import {
+  createHeadTailSample,
   createSelectionRangeText,
   createSnippet,
   detectLanguage,
@@ -117,6 +118,15 @@ describe("snippet formatting", () => {
     assert.strictEqual(
       detectLanguage("/workspace/docker-compose.yaml", "yaml"),
       "docker-compose",
+    );
+  });
+});
+
+describe("head and tail samples", () => {
+  it("joins ranged document reads with an omission marker", () => {
+    assert.strictEqual(
+      createHeadTailSample("line 1\nline 2", "line 9\nline 10", 6),
+      "line 1\nline 2\n... 6 lines omitted ...\nline 9\nline 10",
     );
   });
 });

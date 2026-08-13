@@ -299,17 +299,98 @@ suite("Copy Code as Snippet Extension Test Suite", () => {
     workspaceFoldersStub.restore();
   });
 
+  test("Should read only the selected document range", async () => {
+    const selectedContent = "const selected = true;";
+    const selection = new vscode.Selection(
+      new vscode.Position(3, 0),
+      new vscode.Position(3, selectedContent.length),
+    );
+    const getTextSpy = sinon.spy((range?: vscode.Range) => {
+      assert.ok(range, "Selection copies should not read the full document");
+      assert.deepStrictEqual(range, selection);
+      return selectedContent;
+    });
+    const document = {
+      uri: { fsPath: "/workspace/project/src/selection.ts" },
+      languageId: "typescript",
+      getText: getTextSpy,
+      lineCount: 100,
+    };
+    const editor = { document, selection };
+
+    const activeTextEditorStub = sinon
+      .stub(vscode.window, "activeTextEditor")
+      .value(editor);
+
+    await vscode.commands.executeCommand("copy-code-as-snippet.copy");
+
+    assert.strictEqual(getTextSpy.calledOnce, true);
+    assert.strictEqual(
+      clipboardSpy.firstCall.args[0],
+      "```typescript:src/selection.ts\nconst selected = true;\n```",
+    );
+
+    activeTextEditorStub.restore();
+  });
+
+  test("Should cancel a large-file copy before reading document text", async () => {
+    configurationValues["largeFile.promptEnabled"] = true;
+    configurationValues["largeFile.lineThreshold"] = 10;
+
+    const document = {
+      uri: { fsPath: "/workspace/project/src/large.js" },
+      languageId: "javascript",
+      getText: sinon.stub().throws(new Error("Document text was read")),
+      lineCount: 120,
+    };
+    const selection = new vscode.Selection(
+      new vscode.Position(0, 0),
+      new vscode.Position(0, 0),
+    );
+    const editor = { document, selection };
+
+    const activeTextEditorStub = sinon
+      .stub(vscode.window, "activeTextEditor")
+      .value(editor);
+    const showQuickPickStub = sinon
+      .stub(vscode.window, "showQuickPick")
+      .resolves(undefined);
+
+    await vscode.commands.executeCommand("copy-code-as-snippet.copy");
+
+    assert.strictEqual(document.getText.called, false);
+    assert.strictEqual(clipboardSpy.called, false);
+    assert.strictEqual(showQuickPickStub.calledOnce, true);
+
+    activeTextEditorStub.restore();
+    showQuickPickStub.restore();
+  });
+
   test("Should prompt for large files and allow head/tail sampling", async () => {
     configurationValues["largeFile.promptEnabled"] = true;
     configurationValues["largeFile.lineThreshold"] = 10;
 
     const contentLines = Array.from({ length: 120 }, (_, i) => `line ${i + 1}`);
     const fullContent = contentLines.join("\n");
+    const getTextStub = sinon.stub().callsFake((range?: vscode.Range) => {
+      if (!range) {
+        return fullContent;
+      }
+      return contentLines
+        .slice(range.start.line, range.end.line + 1)
+        .join("\n");
+    });
 
     const document = {
       uri: { fsPath: "/workspace/project/src/large.js" },
       languageId: "javascript",
-      getText: () => fullContent,
+      getText: getTextStub,
+      lineAt: (line: number) => ({
+        range: new vscode.Range(
+          new vscode.Position(line, 0),
+          new vscode.Position(line, contentLines[line].length),
+        ),
+      }),
       lineCount: contentLines.length,
     };
     const selection = new vscode.Selection(
@@ -360,6 +441,11 @@ suite("Copy Code as Snippet Extension Test Suite", () => {
     assert.strictEqual(clipboardSpy.calledOnce, true);
     assert.strictEqual(clipboardSpy.firstCall.args[0], expectedSnippet);
     assert.strictEqual(showQuickPickStub.callCount, 2);
+    assert.strictEqual(getTextStub.callCount, 2);
+    assert.strictEqual(getTextStub.firstCall.args[0].start.line, 0);
+    assert.strictEqual(getTextStub.firstCall.args[0].end.line, 19);
+    assert.strictEqual(getTextStub.secondCall.args[0].start.line, 100);
+    assert.strictEqual(getTextStub.secondCall.args[0].end.line, 119);
 
     activeTextEditorStub.restore();
     workspaceFoldersStub.restore();
@@ -372,11 +458,25 @@ suite("Copy Code as Snippet Extension Test Suite", () => {
 
     const contentLines = Array.from({ length: 40 }, (_, i) => `line ${i + 1}`);
     const fullContent = contentLines.join("\n");
+    const getTextStub = sinon.stub().callsFake((range?: vscode.Range) => {
+      if (!range) {
+        return fullContent;
+      }
+      return contentLines
+        .slice(range.start.line, range.end.line + 1)
+        .join("\n");
+    });
 
     const document = {
       uri: { fsPath: "/workspace/project/src/custom-large.js" },
       languageId: "javascript",
-      getText: () => fullContent,
+      getText: getTextStub,
+      lineAt: (line: number) => ({
+        range: new vscode.Range(
+          new vscode.Position(line, 0),
+          new vscode.Position(line, contentLines[line].length),
+        ),
+      }),
       lineCount: contentLines.length,
     };
     const selection = new vscode.Selection(
@@ -430,10 +530,67 @@ suite("Copy Code as Snippet Extension Test Suite", () => {
     assert.strictEqual(clipboardSpy.firstCall.args[0], expectedSnippet);
     assert.strictEqual(showQuickPickStub.callCount, 2);
     assert.strictEqual(showInputBoxStub.callCount, 2);
+    assert.strictEqual(getTextStub.callCount, 2);
+    assert.strictEqual(getTextStub.firstCall.args[0].start.line, 0);
+    assert.strictEqual(getTextStub.firstCall.args[0].end.line, 4);
+    assert.strictEqual(getTextStub.secondCall.args[0].start.line, 33);
+    assert.strictEqual(getTextStub.secondCall.args[0].end.line, 39);
 
     activeTextEditorStub.restore();
     workspaceFoldersStub.restore();
     showQuickPickStub.restore();
     showInputBoxStub.restore();
+  });
+
+  test("Should read the full document when head and tail cover it", async () => {
+    configurationValues["largeFile.promptEnabled"] = true;
+    configurationValues["largeFile.lineThreshold"] = 5;
+
+    const contentLines = Array.from({ length: 15 }, (_, i) => `line ${i + 1}`);
+    const fullContent = contentLines.join("\n");
+    const getTextStub = sinon.stub().callsFake((range?: vscode.Range) => {
+      assert.strictEqual(range, undefined);
+      return fullContent;
+    });
+    const document = {
+      uri: { fsPath: "/workspace/project/src/covered.js" },
+      languageId: "javascript",
+      getText: getTextStub,
+      lineAt: sinon.stub().throws(new Error("Line ranges should not be read")),
+      lineCount: contentLines.length,
+    };
+    const selection = new vscode.Selection(
+      new vscode.Position(0, 0),
+      new vscode.Position(0, 0),
+    );
+    const editor = { document, selection };
+
+    const activeTextEditorStub = sinon
+      .stub(vscode.window, "activeTextEditor")
+      .value(editor);
+    const showQuickPickStub = sinon.stub(vscode.window, "showQuickPick");
+    showQuickPickStub
+      .onFirstCall()
+      .resolves(
+        "Copy head & tail (select ranges...)" as unknown as vscode.QuickPickItem,
+      );
+    showQuickPickStub.onSecondCall().resolves({
+      label: "Head 10 / Tail 10",
+      description: "First 10 lines + Last 10 lines",
+      head: 10,
+      tail: 10,
+    } as any);
+
+    await vscode.commands.executeCommand("copy-code-as-snippet.copy");
+
+    assert.strictEqual(getTextStub.calledOnce, true);
+    assert.strictEqual(document.lineAt.called, false);
+    assert.strictEqual(
+      clipboardSpy.firstCall.args[0],
+      `\`\`\`javascript:src/covered.js\n${fullContent}\n\`\`\``,
+    );
+
+    activeTextEditorStub.restore();
+    showQuickPickStub.restore();
   });
 });

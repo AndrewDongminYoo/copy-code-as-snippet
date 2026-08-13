@@ -68,6 +68,14 @@ export function createSelectionRangeText(
   return `lines ${startLine + 1}-${inclusiveEndLine} (selection)`;
 }
 
+export function createHeadTailSample(
+  headContent: string,
+  tailContent: string,
+  omittedLines: number,
+): string {
+  return `${headContent}\n... ${omittedLines} lines omitted ...\n${tailContent}`;
+}
+
 function createMarkdownSnippet(options: SnippetOptions): string {
   const fence = resolveFence(options.fenceStrategy, options.content);
 

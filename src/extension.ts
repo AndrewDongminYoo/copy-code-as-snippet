@@ -3,6 +3,7 @@
 import * as vscode from "vscode";
 import * as path from "path";
 import {
+  createHeadTailSample,
   createSelectionRangeText,
   createSnippet,
   detectLanguage,
@@ -67,12 +68,8 @@ export function activate(context: vscode.ExtensionContext) {
       // Determine content and range
       const selection = editor.selection;
       const hasSelection = !selection.isEmpty;
-      const fullContent = document.getText();
-      const totalLines =
-        document.lineCount || fullContent.split(/\r?\n/).length || 1;
-      let fileContent = hasSelection
-        ? document.getText(selection)
-        : fullContent;
+      const totalLines = document.lineCount;
+      let fileContent: string;
       let rangeText = hasSelection
         ? createSelectionRangeText(
             selection.start.line,
@@ -81,11 +78,9 @@ export function activate(context: vscode.ExtensionContext) {
           )
         : `lines 1-${totalLines} (full file)`;
 
-      if (
-        largeFilePromptEnabled &&
-        !hasSelection &&
-        totalLines > lineThreshold
-      ) {
+      if (hasSelection) {
+        fileContent = document.getText(selection);
+      } else if (largeFilePromptEnabled && totalLines > lineThreshold) {
         const choice = await vscode.window.showQuickPick(
           ["Copy full file", "Copy head & tail (select ranges...)", "Cancel"],
           {
@@ -98,7 +93,7 @@ export function activate(context: vscode.ExtensionContext) {
         }
 
         if (choice.startsWith("Copy full")) {
-          // Proceed as is (do nothing)
+          fileContent = document.getText();
         } else if (choice.startsWith("Copy head")) {
           // ✅ Ask the user once more for the number of head/tail lines
           const headTail = await pickHeadTailLines(30, 30);
@@ -107,13 +102,17 @@ export function activate(context: vscode.ExtensionContext) {
             return;
           }
 
-          fileContent = createHeadTailSample(
-            fullContent,
+          fileContent = readHeadTailSample(
+            document,
             headTail.head,
             headTail.tail,
           );
           rangeText = `lines 1-${totalLines} (head/tail sample: head ${headTail.head}, tail ${headTail.tail})`;
+        } else {
+          return;
         }
+      } else {
+        fileContent = document.getText();
       }
 
       // Generate snippet
@@ -148,22 +147,39 @@ export function activate(context: vscode.ExtensionContext) {
   context.subscriptions.push(disposable);
 }
 
-function createHeadTailSample(
-  content: string,
-  headLines = 30,
-  tailLines = 30,
+function readHeadTailSample(
+  document: vscode.TextDocument,
+  headLines: number,
+  tailLines: number,
 ): string {
-  const lines = content.split(/\r?\n/);
-  if (lines.length <= headLines + tailLines) {
-    return content;
+  if (document.lineCount <= headLines + tailLines) {
+    return document.getText();
   }
 
-  const omitted = lines.length - headLines - tailLines;
-  const head = lines.slice(0, headLines);
-  const tail = lines.slice(-tailLines);
-  const marker = `... ${omitted} lines omitted ...`;
+  const omittedLines = document.lineCount - headLines - tailLines;
+  const headContent = document.getText(
+    getDocumentLineRange(document, 0, headLines),
+  );
+  const tailContent = document.getText(
+    getDocumentLineRange(
+      document,
+      document.lineCount - tailLines,
+      document.lineCount,
+    ),
+  );
 
-  return [...head, marker, ...tail].join("\n");
+  return createHeadTailSample(headContent, tailContent, omittedLines);
+}
+
+function getDocumentLineRange(
+  document: vscode.TextDocument,
+  startLine: number,
+  endLineExclusive: number,
+): vscode.Range {
+  return new vscode.Range(
+    new vscode.Position(startLine, 0),
+    document.lineAt(endLineExclusive - 1).range.end,
+  );
 }
 
 interface HeadTailPreset extends vscode.QuickPickItem {

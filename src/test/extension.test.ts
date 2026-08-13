@@ -256,7 +256,7 @@ suite("Copy Code as Snippet Extension Test Suite", () => {
       getText: (range?: vscode.Range) => {
         if (range) {
           return contentLines
-            .slice(range.start.line, range.end.line + 1)
+            .slice(range.start.line, range.end.line)
             .join("\n");
         }
         return fullContent;
@@ -281,11 +281,11 @@ suite("Copy Code as Snippet Extension Test Suite", () => {
 
     await vscode.commands.executeCommand("copy-code-as-snippet.copy");
 
-    const expectedSelectionContent = contentLines.slice(4, 10).join("\n");
+    const expectedSelectionContent = contentLines.slice(4, 9).join("\n");
     const expectedSnippet = [
       "### File: src/index.ts",
       "### Language: typescript",
-      "### Range: lines 5-10 (selection)",
+      "### Range: lines 5-9 (selection)",
       "",
       "```typescript",
       expectedSelectionContent,

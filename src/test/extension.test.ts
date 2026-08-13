@@ -2,103 +2,32 @@ import * as assert from "assert";
 import * as vscode from "vscode";
 import * as path from "path";
 import * as sinon from "sinon";
-import { activate } from "../extension";
 
 suite("Copy Code as Snippet Extension Test Suite", () => {
-  let context: vscode.ExtensionContext;
+  let extension: vscode.Extension<unknown>;
   let clipboardSpy: sinon.SinonStub;
   let showInfoMessageSpy: sinon.SinonStub;
-  let getConfigurationStub: sinon.SinonStub;
-  let getWorkspaceFolderStub: sinon.SinonStub;
   let configurationValues: Record<string, any>;
   let originalClipboard: typeof vscode.env.clipboard;
 
-  setup(() => {
-    // Create a mock extension context
-    context = {
-      subscriptions: [],
-      workspaceState: {
-        get: (key: string) => undefined,
-        update: (key: string, value: any) => Promise.resolve(),
-        keys: () => [],
-      },
-      globalState: {
-        get: (key: string) => undefined,
-        update: (key: string, value: any) => Promise.resolve(),
-        setKeysForSync: (keys: string[]) => {},
-        keys: () => [],
-      },
-      extensionUri: vscode.Uri.file(""),
-      extensionPath: "",
-      asAbsolutePath: (relativePath: string) => relativePath,
-      storageUri: vscode.Uri.file(""),
-      globalStorageUri: vscode.Uri.file(""),
-      logUri: vscode.Uri.file(""),
-      extensionMode: vscode.ExtensionMode.Development,
-      environmentVariableCollection: {
-        [Symbol.iterator]: function* () {},
-        replace: (_: string, __: string) => {},
-        append: (_: string, __: string) => {},
-        prepend: (_: string, __: string) => {},
-        getScoped: (_: vscode.EnvironmentVariableScope) => {
-          return {
-            [Symbol.iterator]: function* () {},
-            get: (_: string) => undefined,
-            forEach: (
-              callback: (
-                variable: string,
-                mutator: vscode.EnvironmentVariableMutator,
-                collection: vscode.EnvironmentVariableCollection,
-              ) => any,
-            ) => {},
-            delete: (_: string) => {},
-            clear: () => {},
-            persistent: false,
-            description: "",
-            replace: (_: string, __: string) => {},
-            append: (_: string, __: string) => {},
-            prepend: (_: string, __: string) => {},
-          };
-        },
-        get: (_: string) => undefined,
-        forEach: (
-          callback: (
-            variable: string,
-            mutator: vscode.EnvironmentVariableMutator,
-            collection: vscode.EnvironmentVariableCollection,
-          ) => any,
-        ) => {},
-        delete: (_: string) => {},
-        clear: () => {},
-        persistent: false,
-        description: "",
-      },
-      storagePath: "",
-      globalStoragePath: "",
-      extension: {} as any,
-      languageModelAccessInformation: {} as any,
-      logPath: "",
-      secrets: {
-        get: (key: string) => Promise.resolve(undefined),
-        store: (key: string, value: string) => Promise.resolve(),
-        delete: (key: string) => Promise.resolve(),
-        onDidChange: () => ({ dispose: () => {} }),
-        keys: () => Promise.resolve([]),
-      },
-    };
+  suiteSetup(async () => {
+    const installedExtension = vscode.extensions.getExtension(
+      "dongminyu.copy-code-as-snippet",
+    );
+    assert.ok(installedExtension, "Development extension should be installed");
+    extension = installedExtension;
+    await extension.activate();
+  });
 
+  setup(() => {
     configurationValues = {};
-    getConfigurationStub = sinon
-      .stub(vscode.workspace, "getConfiguration")
-      .callsFake(() => {
-        return {
-          get: (key: string, defaultValue: any) =>
-            key in configurationValues
-              ? configurationValues[key]
-              : defaultValue,
-        } as any;
-      });
-    getWorkspaceFolderStub = sinon
+    sinon.stub(vscode.workspace, "getConfiguration").callsFake(() => {
+      return {
+        get: (key: string, defaultValue: any) =>
+          key in configurationValues ? configurationValues[key] : defaultValue,
+      } as any;
+    });
+    sinon
       .stub(vscode.workspace, "getWorkspaceFolder")
       .callsFake((uri: vscode.Uri) => {
         const workspacePath = "/workspace/project";
@@ -124,26 +53,20 @@ suite("Copy Code as Snippet Extension Test Suite", () => {
     clipboardSpy = vscode.env.clipboard.writeText as sinon.SinonStub;
 
     showInfoMessageSpy = sinon.stub(vscode.window, "showInformationMessage");
-
-    // activate 확장을 한 번만 호출
-    activate(context);
   });
 
   teardown(() => {
-    context.subscriptions.forEach((subscription) => subscription.dispose());
     // 원래 clipboard 복원
     Object.defineProperty(vscode.env, "clipboard", {
       configurable: true,
       writable: true,
       value: originalClipboard,
     });
-    showInfoMessageSpy.restore();
-    getConfigurationStub.restore();
-    getWorkspaceFolderStub.restore();
+    sinon.restore();
   });
 
-  test("Extension should be activated", async () => {
-    assert.strictEqual(context.subscriptions.length, 1);
+  test("Extension should be activated", () => {
+    assert.strictEqual(extension.isActive, true);
   });
 
   test("Should show message when no editor is active", async () => {

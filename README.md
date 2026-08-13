@@ -121,6 +121,15 @@ See or report current issues in [GitHub Issues](https://github.com/AndrewDongmin
 
 ## Release Notes
 
+### 1.3.0
+
+- Added opt-in standard Markdown path headers and basename-only paths for files outside workspaces
+- Added the editor context-menu command and default `Cmd+Alt+C` / `Ctrl+Alt+C` shortcut
+- Fixed HTML whitespace, collision-safe automatic Markdown fences, and end-exclusive selection range metadata
+- Reduced unnecessary full-document reads for selections, canceled prompts, and head/tail samples
+- Made invalid configuration values fall back to compatibility defaults
+- Added deterministic minimum/latest VS Code testing and repository-managed VSIX packaging
+
 ### 1.2.0
 
 - Added AI-friendly Markdown mode with file/language/range header (opt-in)

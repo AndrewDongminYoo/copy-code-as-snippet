@@ -6,13 +6,24 @@ Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how 
 
 ## Unreleased
 
-- Fixed HTML snippets adding formatting whitespace around copied code.
-- Fixed automatic Markdown fences for content containing four or more consecutive backticks.
-- Fixed AI selection metadata for selections ending at the start of a later line.
-- Reduced full-document reads for selections, canceled prompts, and head/tail samples.
+## 1.3.0
+
+### Added
+
 - Added opt-in standard Markdown path headers and outside-workspace basename paths.
 - Added an editor context-menu command and default keyboard shortcut.
 - Added deterministic minimum/latest VS Code testing and repository-managed VSIX packaging.
+
+### Changed
+
+- Reduced full-document reads for selections, canceled prompts, and head/tail samples.
+
+### Fixed
+
+- Fixed HTML snippets adding formatting whitespace around copied code.
+- Fixed automatic Markdown fences for content containing four or more consecutive backticks.
+- Fixed AI selection metadata for selections ending at the start of a later line.
+- Fixed invalid configuration values not falling back to compatibility defaults.
 
 ## 1.2.0
 

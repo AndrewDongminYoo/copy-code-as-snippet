@@ -1,11 +1,16 @@
 .trunk/**
+.github/**
 .vscode/**
 .vscode-test/**
+docs/**
 out/**
 node_modules/**
 src/**
+.node-version
+AGENTS.md
 .gitignore
 .yarnrc
+yarn.lock
 webpack.config.js
 vsc-extension-quickstart.md
 **/tsconfig.json

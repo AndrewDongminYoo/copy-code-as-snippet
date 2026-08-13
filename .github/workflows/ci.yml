@@ -30,9 +30,36 @@ jobs:
       # tsc: catches type errors webpack's transpile step would miss
       - run: yarn compile-tests
 
+      - run: yarn test:unit
+
       # webpack + ts-loader: the check that would have caught the
       # typescript 7 breakage that shipped to main
       - run: yarn compile
+
+  integration:
+    name: Extension Host Test (${{ matrix.vscode-version }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        vscode-version: [1.106.1, stable]
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version-file: .node-version
+          cache: yarn
+
+      - run: yarn install --frozen-lockfile
+
+      - run: yarn compile-tests
+
+      - run: yarn compile
+
+      - run: xvfb-run -a yarn test:integration
+        env:
+          VSCODE_TEST_VERSION: ${{ matrix.vscode-version }}
 
   trunk:
     name: Trunk Check
@@ -71,8 +98,3 @@ jobs:
       - name: Trunk Check
         run: |
           "$RUNNER_TEMP/trunk" check --all --ci
-
-  # `yarn test` is intentionally not run here: vscode-test needs a virtual
-  # display on Linux, and the suite is flaky ("command already exists" —
-  # activate() re-registers in setup() without a reliable teardown), so it
-  # would go red at random. Run it locally until the isolation leak is fixed.

@@ -4,6 +4,16 @@ All notable changes to the "copy-code-as-snippet" extension will be documented i
 
 Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how to structure this file.
 
+## Unreleased
+
+- Fixed HTML snippets adding formatting whitespace around copied code.
+- Fixed automatic Markdown fences for content containing four or more consecutive backticks.
+- Fixed AI selection metadata for selections ending at the start of a later line.
+- Reduced full-document reads for selections, canceled prompts, and head/tail samples.
+- Added opt-in standard Markdown path headers and outside-workspace basename paths.
+- Added an editor context-menu command and default keyboard shortcut.
+- Added deterministic minimum/latest VS Code testing and repository-managed VSIX packaging.
+
 ## 1.2.0
 
 - Added AI-friendly Markdown mode with header metadata (file/language/range) as an opt-in setting

@@ -2,29 +2,21 @@
 // Import the module and reference it with the alias vscode in your code below
 import * as vscode from "vscode";
 import * as path from "path";
-
-/**
- * Enum for supported snippet output formats.
- */
-const enum SnippetFormat {
-  Markdown = "markdown",
-  Html = "html",
-  Plain = "plain",
-}
-
-type FenceStrategy = "default" | "autoUpgrade" | "tilde";
+import {
+  createHeadTailSample,
+  createSelectionRangeText,
+  createSnippet,
+  detectLanguage,
+  FenceStrategy,
+  MarkdownPathPlacement,
+  SnippetFormat,
+} from "./snippet";
 
 /**
  * Called when the extension is activated.
  * Registers the command and performs initialization.
  */
 export function activate(context: vscode.ExtensionContext) {
-  // Use the console to output diagnostic information (console.log) and errors (console.error)
-  // This line of code will only be executed once when your extension is activated
-  console.log(
-    'Congratulations, your extension "copy-code-as-snippet" is now active!',
-  );
-
   // The command has been defined in the package.json file
   // Now provide the implementation of the command with registerCommand
   // The commandId parameter must match the command field in package.json
@@ -39,53 +31,102 @@ export function activate(context: vscode.ExtensionContext) {
 
       const document = editor.document;
       const filePath = document.uri.fsPath;
-
-      // Calculate workspace-relative path
-      let relativePath = filePath;
       const workspaceFolder = vscode.workspace.getWorkspaceFolder(document.uri);
-      if (workspaceFolder) {
-        relativePath = path.relative(workspaceFolder.uri.fsPath, filePath);
-      }
 
       // Detect language
       const language = detectLanguage(filePath, document.languageId);
 
       // Read configuration
       const config = vscode.workspace.getConfiguration("copy-code-as-snippet");
-      const includeFilePath = config.get<boolean>("includeFilePath", true);
-      const snippetFormat = config.get<SnippetFormat>(
+      const configuredIncludeFilePath = config.get<unknown>(
+        "includeFilePath",
+        true,
+      );
+      const includeFilePath =
+        typeof configuredIncludeFilePath === "boolean"
+          ? configuredIncludeFilePath
+          : true;
+      const configuredSnippetFormat = config.get<unknown>(
         "format",
         SnippetFormat.Markdown,
       );
-      const fenceStrategy = config.get<FenceStrategy>(
+      const snippetFormat =
+        configuredSnippetFormat === SnippetFormat.Html ||
+        configuredSnippetFormat === SnippetFormat.Plain
+          ? configuredSnippetFormat
+          : SnippetFormat.Markdown;
+      const configuredFenceStrategy = config.get<unknown>(
         "markdown.fenceStrategy",
         "default",
       );
-      const aiModeEnabled = config.get<boolean>("aiMode.enabled", false);
-      const lineThreshold = config.get<number>("largeFile.lineThreshold", 1000);
-      const largeFilePromptEnabled = config.get<boolean>(
+      const fenceStrategy: FenceStrategy =
+        configuredFenceStrategy === "autoUpgrade" ||
+        configuredFenceStrategy === "tilde"
+          ? configuredFenceStrategy
+          : "default";
+      const configuredAiModeEnabled = config.get<unknown>(
+        "aiMode.enabled",
+        false,
+      );
+      const aiModeEnabled =
+        typeof configuredAiModeEnabled === "boolean"
+          ? configuredAiModeEnabled
+          : false;
+      const configuredLineThreshold = config.get<unknown>(
+        "largeFile.lineThreshold",
+        1000,
+      );
+      const lineThreshold =
+        typeof configuredLineThreshold === "number" &&
+        Number.isInteger(configuredLineThreshold) &&
+        configuredLineThreshold >= 1
+          ? configuredLineThreshold
+          : 1000;
+      const configuredLargeFilePromptEnabled = config.get<unknown>(
         "largeFile.promptEnabled",
         false,
       );
+      const largeFilePromptEnabled =
+        typeof configuredLargeFilePromptEnabled === "boolean"
+          ? configuredLargeFilePromptEnabled
+          : false;
+      const configuredPathPlacement = config.get<unknown>(
+        "markdown.pathPlacement",
+        "legacy",
+      );
+      const pathPlacement: MarkdownPathPlacement =
+        configuredPathPlacement === "header" ? "header" : "legacy";
+      const configuredOutsidePath = config.get<unknown>(
+        "outsideWorkspacePath",
+        "absolute",
+      );
+      const outsideWorkspacePath =
+        configuredOutsidePath === "basename" ? "basename" : "absolute";
+
+      let relativePath =
+        outsideWorkspacePath === "basename"
+          ? path.basename(filePath)
+          : filePath;
+      if (workspaceFolder) {
+        relativePath = path.relative(workspaceFolder.uri.fsPath, filePath);
+      }
 
       // Determine content and range
       const selection = editor.selection;
       const hasSelection = !selection.isEmpty;
-      const fullContent = document.getText();
-      const totalLines =
-        document.lineCount || fullContent.split(/\r?\n/).length || 1;
-      let fileContent = hasSelection
-        ? document.getText(selection)
-        : fullContent;
+      const totalLines = document.lineCount;
+      let fileContent: string;
       let rangeText = hasSelection
-        ? `lines ${selection.start.line + 1}-${selection.end.line + 1} (selection)`
+        ? createSelectionRangeText(
+            selection.start.line,
+            selection.end.line,
+            selection.end.character,
+          )
         : `lines 1-${totalLines} (full file)`;
 
-      if (
-        largeFilePromptEnabled &&
-        !hasSelection &&
-        totalLines > lineThreshold
-      ) {
+      if (hasSelection) {
+        fileContent = document.getText(selection);
+      } else if (largeFilePromptEnabled && totalLines > lineThreshold) {
         const choice = await vscode.window.showQuickPick(
           ["Copy full file", "Copy head & tail (select ranges...)", "Cancel"],
           {
@@ -98,7 +139,7 @@ export function activate(context: vscode.ExtensionContext) {
         }
 
         if (choice.startsWith("Copy full")) {
-          // Proceed as is (do nothing)
+          fileContent = document.getText();
         } else if (choice.startsWith("Copy head")) {
           // ✅ Ask the user once more for the number of head/tail lines
           const headTail = await pickHeadTailLines(30, 30);
@@ -107,13 +148,17 @@ export function activate(context: vscode.ExtensionContext) {
             return;
           }
 
-          fileContent = createHeadTailSample(
-            fullContent,
+          fileContent = readHeadTailSample(
+            document,
             headTail.head,
             headTail.tail,
           );
           rangeText = `lines 1-${totalLines} (head/tail sample: head ${headTail.head}, tail ${headTail.tail})`;
+        } else {
+          return;
         }
+      } else {
+        fileContent = document.getText();
       }
 
       // Generate snippet
@@ -127,6 +172,7 @@ export function activate(context: vscode.ExtensionContext) {
         aiModeEnabled:
           snippetFormat === SnippetFormat.Markdown && aiModeEnabled,
         rangeText,
+        pathPlacement,
       });
 
       try {
@@ -147,188 +193,39 @@ export function activate(context: vscode.ExtensionContext) {
   context.subscriptions.push(disposable);
 }
 
-/**
- * Detects the appropriate language for syntax highlighting.
- * @param filePath Full file path
- * @param defaultLanguage Language ID from VS Code
- * @returns Detected language string
- */
-function detectLanguage(filePath: string, defaultLanguage: string): string {
-  const fileName = path.basename(filePath);
-  const fileExtension = path.extname(filePath);
-  // Mapping for various file types
-  if (filePath.includes("android") && fileName === "build.gradle") {
-    return "groovy";
-  }
-
-  // Add mapping for other file types
-  if (fileName === "Dockerfile") {
-    return "dockerfile";
-  }
-
-  if (fileExtension === ".yml" || fileExtension === ".yaml") {
-    if (fileName.includes("docker-compose")) {
-      return "docker-compose";
-    }
-  }
-
-  // Additional language detection logic can be implemented here
-
-  return defaultLanguage;
-}
-
-/**
- * Generates a code snippet in the specified format.
- * @param format Snippet format
- * @param language Language identifier
- * @param relativePath Relative path for metadata
- * @param content Code content
- * @param includeFilePath Whether to include file path in the snippet
- * @returns Formatted snippet string
- */
-function createSnippet(options: {
-  format: SnippetFormat;
-  language: string;
-  relativePath: string;
-  content: string;
-  includeFilePath: boolean;
-  fenceStrategy: FenceStrategy;
-  aiModeEnabled: boolean;
-  rangeText: string;
-}): string {
-  switch (options.format) {
-    case SnippetFormat.Markdown:
-      return createMarkdownSnippet({
-        language: options.language,
-        relativePath: options.relativePath,
-        content: options.content,
-        includePath: options.includeFilePath,
-        fenceStrategy: options.fenceStrategy,
-        aiModeEnabled: options.aiModeEnabled,
-        rangeText: options.rangeText,
-      });
-    case SnippetFormat.Html:
-      return createHtmlSnippet(
-        options.language,
-        options.relativePath,
-        options.content,
-        options.includeFilePath,
-      );
-    case SnippetFormat.Plain:
-      return options.content;
-    default:
-      return createMarkdownSnippet({
-        language: options.language,
-        relativePath: options.relativePath,
-        content: options.content,
-        includePath: options.includeFilePath,
-        fenceStrategy: options.fenceStrategy,
-        aiModeEnabled: options.aiModeEnabled,
-        rangeText: options.rangeText,
-      });
-  }
-}
-
-/**
- * Creates a Markdown-formatted code block.
- */
-function createMarkdownSnippet(options: {
-  language: string;
-  relativePath: string;
-  content: string;
-  includePath: boolean;
-  fenceStrategy: FenceStrategy;
-  aiModeEnabled: boolean;
-  rangeText: string;
-}): string {
-  const fence = resolveFence(options.fenceStrategy, options.content);
-
-  if (options.aiModeEnabled) {
-    const headerParts = [
-      options.includePath ? `### File: ${options.relativePath}` : undefined,
-      `### Language: ${options.language}`,
-      options.rangeText ? `### Range: ${options.rangeText}` : undefined,
-    ].filter(Boolean);
-
-    const header = headerParts.join("\n");
-    return `${header}\n\n${fence}${options.language}\n${options.content}\n${fence}`;
-  }
-
-  const header = options.includePath
-    ? `${options.language}:${options.relativePath}`
-    : options.language;
-
-  return `${fence}${header}\n${options.content}\n${fence}`;
-}
-
-/**
- * Creates an HTML-formatted code block.
- * @param language Language identifier
- * @param relativePath Relative file path
- * @param content Code content
- * @param includePath Whether to include file path as attribute
- * @returns HTML string
- */
-function createHtmlSnippet(
-  language: string,
-  relativePath: string,
-  content: string,
-  includePath: boolean,
+function readHeadTailSample(
+  document: vscode.TextDocument,
+  headLines: number,
+  tailLines: number,
 ): string {
-  const classAttr = `language-${language}`;
-  const filenameAttr = includePath
-    ? ` data-filename="${escapeHtml(relativePath)}"`
-    : "";
-  return `
-<pre>
-  <code class="${classAttr}"${filenameAttr}>
-  ${escapeHtml(content)}
-  </code>
-</pre>`;
-}
-
-/**
- * Escapes HTML special characters.
- * @param text Input string
- * @returns Escaped HTML string
- */
-function escapeHtml(text: string): string {
-  return text
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;")
-    .replace(/'/g, "&#039;");
-}
-
-function resolveFence(fenceStrategy: FenceStrategy, content: string): string {
-  if (fenceStrategy === "tilde") {
-    return "~~~";
+  if (document.lineCount <= headLines + tailLines) {
+    return document.getText();
   }
 
-  if (fenceStrategy === "autoUpgrade" && content.includes("```")) {
-    return "````";
-  }
+  const omittedLines = document.lineCount - headLines - tailLines;
+  const headContent = document.getText(
+    getDocumentLineRange(document, 0, headLines),
+  );
+  const tailContent = document.getText(
+    getDocumentLineRange(
+      document,
+      document.lineCount - tailLines,
+      document.lineCount,
+    ),
+  );
 
-  return "```";
+  return createHeadTailSample(headContent, tailContent, omittedLines);
 }
 
-function createHeadTailSample(
-  content: string,
-  headLines = 30,
-  tailLines = 30,
-): string {
-  const lines = content.split(/\r?\n/);
-  if (lines.length <= headLines + tailLines) {
-    return content;
-  }
-
-  const omitted = lines.length - headLines - tailLines;
-  const head = lines.slice(0, headLines);
-  const tail = lines.slice(-tailLines);
-  const marker = `... ${omitted} lines omitted ...`;
-
-  return [...head, marker, ...tail].join("\n");
+function getDocumentLineRange(
+  document: vscode.TextDocument,
+  startLine: number,
+  endLineExclusive: number,
+): vscode.Range {
+  return new vscode.Range(
+    new vscode.Position(startLine, 0),
+    document.lineAt(endLineExclusive - 1).range.end,
+  );
 }
 
 interface HeadTailPreset extends vscode.QuickPickItem {

@@ -90,6 +90,10 @@ function createMarkdownSnippet(options: SnippetOptions): string {
     return `${header}\n\n${fence}${options.language}\n${options.content}\n${fence}`;
   }
 
+  if (options.pathPlacement === "header" && options.includeFilePath) {
+    return `### File: ${options.relativePath}\n\n${fence}${options.language}\n${options.content}\n${fence}`;
+  }
+
   const header = options.includeFilePath
     ? `${options.language}:${options.relativePath}`
     : options.language;

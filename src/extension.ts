@@ -8,6 +8,7 @@ import {
   createSnippet,
   detectLanguage,
   FenceStrategy,
+  MarkdownPathPlacement,
   SnippetFormat,
 } from "./snippet";
 
@@ -36,13 +37,7 @@ export function activate(context: vscode.ExtensionContext) {
 
       const document = editor.document;
       const filePath = document.uri.fsPath;
-
-      // Calculate workspace-relative path
-      let relativePath = filePath;
       const workspaceFolder = vscode.workspace.getWorkspaceFolder(document.uri);
-      if (workspaceFolder) {
-        relativePath = path.relative(workspaceFolder.uri.fsPath, filePath);
-      }
 
       // Detect language
       const language = detectLanguage(filePath, document.languageId);
@@ -64,6 +59,26 @@ export function activate(context: vscode.ExtensionContext) {
         "largeFile.promptEnabled",
         false,
       );
+      const configuredPathPlacement = config.get<string>(
+        "markdown.pathPlacement",
+        "legacy",
+      );
+      const pathPlacement: MarkdownPathPlacement =
+        configuredPathPlacement === "header" ? "header" : "legacy";
+      const configuredOutsidePath = config.get<string>(
+        "outsideWorkspacePath",
+        "absolute",
+      );
+      const outsideWorkspacePath =
+        configuredOutsidePath === "basename" ? "basename" : "absolute";
+
+      let relativePath =
+        outsideWorkspacePath === "basename"
+          ? path.basename(filePath)
+          : filePath;
+      if (workspaceFolder) {
+        relativePath = path.relative(workspaceFolder.uri.fsPath, filePath);
+      }
 
       // Determine content and range
       const selection = editor.selection;
@@ -126,7 +141,7 @@ export function activate(context: vscode.ExtensionContext) {
         aiModeEnabled:
           snippetFormat === SnippetFormat.Markdown && aiModeEnabled,
         rangeText,
-        pathPlacement: "legacy",
+        pathPlacement,
       });
 
       try {

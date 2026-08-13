@@ -26,6 +26,65 @@ describe("snippet formatting", () => {
     );
   });
 
+  it("places an included path above a standard Markdown fence", () => {
+    assert.strictEqual(
+      createSnippet({
+        format: SnippetFormat.Markdown,
+        language: "typescript",
+        relativePath: "src/index.ts",
+        content: "const value = 1;",
+        includeFilePath: true,
+        fenceStrategy: "default",
+        aiModeEnabled: false,
+        rangeText: "lines 1-1 (full file)",
+        pathPlacement: "header",
+      }),
+      "### File: src/index.ts\n\n```typescript\nconst value = 1;\n```",
+    );
+  });
+
+  it("omits the header when header placement has no included path", () => {
+    assert.strictEqual(
+      createSnippet({
+        format: SnippetFormat.Markdown,
+        language: "typescript",
+        relativePath: "src/index.ts",
+        content: "const value = 1;",
+        includeFilePath: false,
+        fenceStrategy: "default",
+        aiModeEnabled: false,
+        rangeText: "lines 1-1 (full file)",
+        pathPlacement: "header",
+      }),
+      "```typescript\nconst value = 1;\n```",
+    );
+  });
+
+  it("keeps the AI header layout when header placement is configured", () => {
+    assert.strictEqual(
+      createSnippet({
+        format: SnippetFormat.Markdown,
+        language: "typescript",
+        relativePath: "src/index.ts",
+        content: "const value = 1;",
+        includeFilePath: true,
+        fenceStrategy: "default",
+        aiModeEnabled: true,
+        rangeText: "lines 1-1 (full file)",
+        pathPlacement: "header",
+      }),
+      [
+        "### File: src/index.ts",
+        "### Language: typescript",
+        "### Range: lines 1-1 (full file)",
+        "",
+        "```typescript",
+        "const value = 1;",
+        "```",
+      ].join("\n"),
+    );
+  });
+
   it("preserves plain text exactly", () => {
     assert.strictEqual(
       createSnippet({

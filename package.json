@@ -33,6 +33,22 @@
         "title": "Copy Code as Snippet"
       }
     ],
+    "menus": {
+      "editor/context": [
+        {
+          "command": "copy-code-as-snippet.copy",
+          "when": "editorTextFocus"
+        }
+      ]
+    },
+    "keybindings": [
+      {
+        "command": "copy-code-as-snippet.copy",
+        "key": "ctrl+alt+c",
+        "mac": "cmd+alt+c",
+        "when": "editorTextFocus"
+      }
+    ],
     "configuration": {
       "title": "Copy Code as Snippet",
       "properties": {
@@ -66,8 +82,27 @@
           "default": "default",
           "description": "Markdown fence style: keep default, auto-upgrade to four backticks when content contains ``` , or always use ~~~"
         },
+        "copy-code-as-snippet.markdown.pathPlacement": {
+          "type": "string",
+          "enum": [
+            "legacy",
+            "header"
+          ],
+          "default": "legacy",
+          "description": "Place the file path in the legacy opening fence or in a standard Markdown header"
+        },
+        "copy-code-as-snippet.outsideWorkspacePath": {
+          "type": "string",
+          "enum": [
+            "absolute",
+            "basename"
+          ],
+          "default": "absolute",
+          "description": "Use an absolute path or only the file name for documents outside a workspace"
+        },
         "copy-code-as-snippet.largeFile.lineThreshold": {
-          "type": "number",
+          "type": "integer",
+          "minimum": 1,
           "default": 1000,
           "description": "Line count threshold to treat a file as large when prompting for head/tail sampling"
         },

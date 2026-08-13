@@ -38,28 +38,65 @@ export function activate(context: vscode.ExtensionContext) {
 
       // Read configuration
       const config = vscode.workspace.getConfiguration("copy-code-as-snippet");
-      const includeFilePath = config.get<boolean>("includeFilePath", true);
-      const snippetFormat = config.get<SnippetFormat>(
+      const configuredIncludeFilePath = config.get<unknown>(
+        "includeFilePath",
+        true,
+      );
+      const includeFilePath =
+        typeof configuredIncludeFilePath === "boolean"
+          ? configuredIncludeFilePath
+          : true;
+      const configuredSnippetFormat = config.get<unknown>(
         "format",
         SnippetFormat.Markdown,
       );
-      const fenceStrategy = config.get<FenceStrategy>(
+      const snippetFormat =
+        configuredSnippetFormat === SnippetFormat.Html ||
+        configuredSnippetFormat === SnippetFormat.Plain
+          ? configuredSnippetFormat
+          : SnippetFormat.Markdown;
+      const configuredFenceStrategy = config.get<unknown>(
         "markdown.fenceStrategy",
         "default",
       );
-      const aiModeEnabled = config.get<boolean>("aiMode.enabled", false);
-      const lineThreshold = config.get<number>("largeFile.lineThreshold", 1000);
-      const largeFilePromptEnabled = config.get<boolean>(
+      const fenceStrategy: FenceStrategy =
+        configuredFenceStrategy === "autoUpgrade" ||
+        configuredFenceStrategy === "tilde"
+          ? configuredFenceStrategy
+          : "default";
+      const configuredAiModeEnabled = config.get<unknown>(
+        "aiMode.enabled",
+        false,
+      );
+      const aiModeEnabled =
+        typeof configuredAiModeEnabled === "boolean"
+          ? configuredAiModeEnabled
+          : false;
+      const configuredLineThreshold = config.get<unknown>(
+        "largeFile.lineThreshold",
+        1000,
+      );
+      const lineThreshold =
+        typeof configuredLineThreshold === "number" &&
+        Number.isInteger(configuredLineThreshold) &&
+        configuredLineThreshold >= 1
+          ? configuredLineThreshold
+          : 1000;
+      const configuredLargeFilePromptEnabled = config.get<unknown>(
         "largeFile.promptEnabled",
         false,
       );
-      const configuredPathPlacement = config.get<string>(
+      const largeFilePromptEnabled =
+        typeof configuredLargeFilePromptEnabled === "boolean"
+          ? configuredLargeFilePromptEnabled
+          : false;
+      const configuredPathPlacement = config.get<unknown>(
         "markdown.pathPlacement",
         "legacy",
       );
       const pathPlacement: MarkdownPathPlacement =
         configuredPathPlacement === "header" ? "header" : "legacy";
-      const configuredOutsidePath = config.get<string>(
+      const configuredOutsidePath = config.get<unknown>(
         "outsideWorkspacePath",
         "absolute",
       );

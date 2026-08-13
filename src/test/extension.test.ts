@@ -310,6 +310,109 @@ suite("Copy Code as Snippet Extension Test Suite", () => {
     });
   }
 
+  test("Should use compatibility defaults for invalid boolean settings", async () => {
+    configurationValues["includeFilePath"] = 0;
+    configurationValues["aiMode.enabled"] = "true";
+    configurationValues["largeFile.promptEnabled"] = "true";
+
+    const document = {
+      uri: { fsPath: "/workspace/project/src/test.ts" },
+      languageId: "typescript",
+      getText: () => "const value = 1;",
+      lineCount: 1200,
+    };
+    const selection = new vscode.Selection(
+      new vscode.Position(0, 0),
+      new vscode.Position(0, 0),
+    );
+    const editor = { document, selection };
+
+    const activeTextEditorStub = sinon
+      .stub(vscode.window, "activeTextEditor")
+      .value(editor);
+    const showQuickPickStub = sinon
+      .stub(vscode.window, "showQuickPick")
+      .resolves(undefined);
+
+    await vscode.commands.executeCommand("copy-code-as-snippet.copy");
+
+    assert.strictEqual(showQuickPickStub.called, false);
+    assert.strictEqual(
+      clipboardSpy.firstCall.args[0],
+      "```typescript:src/test.ts\nconst value = 1;\n```",
+    );
+
+    activeTextEditorStub.restore();
+    showQuickPickStub.restore();
+  });
+
+  test("Should use compatibility defaults for invalid format settings", async () => {
+    configurationValues["format"] = "xml";
+    configurationValues["markdown.fenceStrategy"] = 4;
+
+    const document = {
+      uri: { fsPath: "/workspace/project/src/test.ts" },
+      languageId: "typescript",
+      getText: () => "const value = 1;",
+      lineCount: 1,
+    };
+    const selection = new vscode.Selection(
+      new vscode.Position(0, 0),
+      new vscode.Position(0, 0),
+    );
+    const editor = { document, selection };
+
+    const activeTextEditorStub = sinon
+      .stub(vscode.window, "activeTextEditor")
+      .value(editor);
+
+    await vscode.commands.executeCommand("copy-code-as-snippet.copy");
+
+    assert.strictEqual(
+      clipboardSpy.firstCall.args[0],
+      "```typescript:src/test.ts\nconst value = 1;\n```",
+    );
+
+    activeTextEditorStub.restore();
+  });
+
+  for (const invalidThreshold of [0, 1.5]) {
+    test(`Should use the default threshold for invalid value ${invalidThreshold}`, async () => {
+      configurationValues["largeFile.promptEnabled"] = true;
+      configurationValues["largeFile.lineThreshold"] = invalidThreshold;
+
+      const document = {
+        uri: { fsPath: "/workspace/project/src/test.ts" },
+        languageId: "typescript",
+        getText: () => "line 1\nline 2",
+        lineCount: 2,
+      };
+      const selection = new vscode.Selection(
+        new vscode.Position(0, 0),
+        new vscode.Position(0, 0),
+      );
+      const editor = { document, selection };
+
+      const activeTextEditorStub = sinon
+        .stub(vscode.window, "activeTextEditor")
+        .value(editor);
+      const showQuickPickStub = sinon
+        .stub(vscode.window, "showQuickPick")
+        .resolves(undefined);
+
+      await vscode.commands.executeCommand("copy-code-as-snippet.copy");
+
+      assert.strictEqual(showQuickPickStub.called, false);
+      assert.strictEqual(
+        clipboardSpy.firstCall.args[0],
+        "```typescript:src/test.ts\nline 1\nline 2\n```",
+      );
+
+      activeTextEditorStub.restore();
+      showQuickPickStub.restore();
+    });
+  }
+
   test("Should upgrade markdown fence when autoUpgrade strategy is set", async () => {
     configurationValues["markdown.fenceStrategy"] = "autoUpgrade";
 

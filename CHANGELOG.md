@@ -8,10 +8,8 @@ Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how 
 
 ### Changed
 
-- Simplified the AI mode header to a single Markdown heading with file,
-  language, and range folded in.
-- The old three-line header failed markdownlint's MD041 and was
-  inconsistent with the single-heading `header` path placement.
+- Simplified the AI mode header to a single Markdown heading with file, language, and range folded in.
+- The old three-line header failed markdownlint's MD041 and was inconsistent with the single-heading `header` path placement.
 
 ## 1.3.0
 

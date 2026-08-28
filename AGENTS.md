@@ -15,8 +15,7 @@
 - `yarn watch` runs webpack in watch mode for iterative development.
 - `yarn lint` runs ESLint on the TypeScript sources.
 - `yarn test` runs `test:unit` (Node's built-in test runner) then `test:integration` (the VS Code Extension Host suite). `yarn watch-tests` recompiles tests on change.
-- See `package.json`'s `scripts` block for the full command list
-  (includes `test:repeat` and `vsix`).
+- See `package.json`'s `scripts` block for the full command list (includes `test:repeat` and `vsix`).
 - `yarn package` or `yarn vscode:prepublish` produces a production bundle (hidden source maps) suitable for publishing.
 
 ## Coding Style & Naming Conventions
@@ -29,13 +28,9 @@
 ## Testing Guidelines
 
 - Extension Host tests use Mocha, Sinon, and the VS Code test harness. Place new specs in `src/test/*.test.ts` and mock VS Code APIs as in the existing suite.
-- Pure-logic unit tests use Node's built-in `node:test` and `assert`.
-  Place new specs in `src/test/*.unit.ts`.
-- Prefer a unit test in `snippet.unit.ts` for pure formatting logic:
-  fence selection, language detection, header layout, range labels.
-- Prefer an Extension Host test in `extension.test.ts` for VS Code
-  wiring: clipboard writes, configuration flags, prompts, command
-  registration.
+- Pure-logic unit tests use Node's built-in `node:test` and `assert`. Place new specs in `src/test/*.unit.ts`.
+- Prefer a unit test in `snippet.unit.ts` for pure formatting logic: fence selection, language detection, header layout, range labels.
+- Prefer an Extension Host test in `extension.test.ts` for VS Code wiring: clipboard writes, configuration flags, prompts, command registration.
 - Run `yarn test` before opening a PR; keep tests deterministic and avoid relying on the host editor state.
 
 ## Commit & Pull Request Guidelines

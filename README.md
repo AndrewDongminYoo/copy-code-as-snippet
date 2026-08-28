@@ -67,8 +67,7 @@ export function activate(context: vscode.ExtensionContext) {
 </details>
 
 AI mode keeps its own single-heading file/language/range layout regardless of the configured Markdown path placement.
-When `includeFilePath` is disabled, the heading leads with the language
-instead of the file path.
+When `includeFilePath` is disabled, the heading leads with the language instead of the file path.
 
 <details>
 <summary>Example (large file head/tail sample)</summary>

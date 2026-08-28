@@ -1,0 +1,3 @@
+# CHANGELOG.md reuses "Added"/"Changed"/"Fixed" under every version heading (Keep a Changelog).
+MD024:
+  siblings_only: true

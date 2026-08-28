@@ -10,7 +10,6 @@ src/**
 .markdownlint.yaml
 AGENTS.md
 .gitignore
-.yarnrc
 yarn.lock
 webpack.config.js
 **/tsconfig.json

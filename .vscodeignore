@@ -12,7 +12,6 @@ AGENTS.md
 .yarnrc
 yarn.lock
 webpack.config.js
-vsc-extension-quickstart.md
 **/tsconfig.json
 **/eslint.config.mjs
 **/*.map

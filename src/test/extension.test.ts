@@ -675,9 +675,7 @@ suite("Copy Code as Snippet Extension Test Suite", () => {
 
     const expectedSelectionContent = contentLines.slice(4, 9).join("\n");
     const expectedSnippet = [
-      "### File: src/index.ts",
-      "### Language: typescript",
-      "### Range: lines 5-9 (selection)",
+      "### File: src/index.ts (typescript, lines 5-9 (selection))",
       "",
       "```typescript",
       expectedSelectionContent,

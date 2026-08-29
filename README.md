@@ -12,7 +12,7 @@ A Visual Studio Code extension that allows you to copy selected code or the enti
 - Supports Markdown, HTML, and plain text snippet formats
 - Handles special cases (e.g., `build.gradle` → `groovy`, `Dockerfile`, `docker-compose.yaml`)
 - Clipboard-ready output for pasting into docs, chats, or markdown editors
-- AI-friendly Markdown mode (opt-in) that adds file/language/range headers
+- AI-friendly Markdown mode (opt-in) that adds a single file/language/range heading
 - Fence strategy controls to avoid broken Markdown when code includes triple backticks or to force `~~~`
 - Optional head/tail sampling prompt for very large files, with presets and custom head/tail counts
 
@@ -56,10 +56,8 @@ export function activate(context: vscode.ExtensionContext) {
 <details>
 <summary>Example (AI mode header + range)</summary>
 
-````plaintext
-### File: src/extension.ts
-### Language: typescript
-### Range: lines 12-34 (selection)
+````markdown
+### File: src/extension.ts (typescript, lines 12-34 (selection))
 
 ```typescript
 // selected code...
@@ -68,7 +66,8 @@ export function activate(context: vscode.ExtensionContext) {
 
 </details>
 
-AI mode keeps its file, language, and range header layout regardless of the configured Markdown path placement.
+AI mode keeps its own single-heading file/language/range layout regardless of the configured Markdown path placement.
+When `includeFilePath` is disabled, the heading leads with the language instead of the file path.
 
 <details>
 <summary>Example (large file head/tail sample)</summary>
@@ -104,16 +103,16 @@ Visual Studio Code 1.106.1 or later.
 
 ## Extension Settings
 
-| Setting                                        | Type                                         | Default    | Description                                                                                                          |
-| ---------------------------------------------- | -------------------------------------------- | ---------- | -------------------------------------------------------------------------------------------------------------------- |
-| `copy-code-as-snippet.includeFilePath`         | `boolean`                                    | `true`     | Include the resolved file path in Markdown and HTML snippets                                                         |
-| `copy-code-as-snippet.format`                  | `string` (`markdown`, `plain`, `html`)       | `markdown` | Output format for the snippet                                                                                        |
-| `copy-code-as-snippet.aiMode.enabled`          | `boolean`                                    | `false`    | Add Markdown file, language, and range headers and use a language-only fence                                         |
-| `copy-code-as-snippet.markdown.fenceStrategy`  | `string` (`default`, `autoUpgrade`, `tilde`) | `default`  | Keep triple backticks, use a backtick fence longer than the copied content, or always use `~~~`                      |
-| `copy-code-as-snippet.markdown.pathPlacement`  | `string` (`legacy`, `header`)                | `legacy`   | Put the path in the opening fence or in a separate Markdown file header; AI mode keeps its own header layout         |
-| `copy-code-as-snippet.outsideWorkspacePath`    | `string` (`absolute`, `basename`)            | `absolute` | Use the full path or only the file name outside a workspace; `basename` reduces exposed directory information        |
-| `copy-code-as-snippet.largeFile.lineThreshold` | `integer` (minimum `1`)                      | `1000`     | Line count threshold for treating a file as large                                                                    |
-| `copy-code-as-snippet.largeFile.promptEnabled` | `boolean`                                    | `false`    | When enabled and over the threshold, prompt to copy the full file or a head/tail sample with preset or custom counts |
+| Setting                                        | Type                                         | Default    | Description                                                                                                                      |
+| ---------------------------------------------- | -------------------------------------------- | ---------- | -------------------------------------------------------------------------------------------------------------------------------- |
+| `copy-code-as-snippet.includeFilePath`         | `boolean`                                    | `true`     | Include the resolved file path in Markdown and HTML snippets                                                                     |
+| `copy-code-as-snippet.format`                  | `string` (`markdown`, `plain`, `html`)       | `markdown` | Output format for the snippet                                                                                                    |
+| `copy-code-as-snippet.aiMode.enabled`          | `boolean`                                    | `false`    | Add a single Markdown heading led by the file path, or by the language when path inclusion is off, and use a language-only fence |
+| `copy-code-as-snippet.markdown.fenceStrategy`  | `string` (`default`, `autoUpgrade`, `tilde`) | `default`  | Keep triple backticks, use a backtick fence longer than the copied content, or always use `~~~`                                  |
+| `copy-code-as-snippet.markdown.pathPlacement`  | `string` (`legacy`, `header`)                | `legacy`   | Put the path in the opening fence or in a separate Markdown file header; AI mode keeps its own header layout                     |
+| `copy-code-as-snippet.outsideWorkspacePath`    | `string` (`absolute`, `basename`)            | `absolute` | Use the full path or only the file name outside a workspace; `basename` reduces exposed directory information                    |
+| `copy-code-as-snippet.largeFile.lineThreshold` | `integer` (minimum `1`)                      | `1000`     | Line count threshold for treating a file as large                                                                                |
+| `copy-code-as-snippet.largeFile.promptEnabled` | `boolean`                                    | `false`    | When enabled and over the threshold, prompt to copy the full file or a head/tail sample with preset or custom counts             |
 
 ## Known Issues
 

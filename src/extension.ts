@@ -38,40 +38,30 @@ export function activate(context: vscode.ExtensionContext) {
 
       // Read configuration
       const config = vscode.workspace.getConfiguration("copy-code-as-snippet");
-      const configuredIncludeFilePath = config.get<unknown>(
+      const includeFilePath = readEnumSetting(
+        config,
         "includeFilePath",
+        [true, false],
         true,
       );
-      const includeFilePath =
-        typeof configuredIncludeFilePath === "boolean"
-          ? configuredIncludeFilePath
-          : true;
-      const configuredSnippetFormat = config.get<unknown>(
+      const snippetFormat = readEnumSetting(
+        config,
         "format",
+        [SnippetFormat.Markdown, SnippetFormat.Html, SnippetFormat.Plain],
         SnippetFormat.Markdown,
       );
-      const snippetFormat =
-        configuredSnippetFormat === SnippetFormat.Html ||
-        configuredSnippetFormat === SnippetFormat.Plain
-          ? configuredSnippetFormat
-          : SnippetFormat.Markdown;
-      const configuredFenceStrategy = config.get<unknown>(
+      const fenceStrategy = readEnumSetting<FenceStrategy>(
+        config,
         "markdown.fenceStrategy",
+        ["default", "autoUpgrade", "tilde"],
         "default",
       );
-      const fenceStrategy: FenceStrategy =
-        configuredFenceStrategy === "autoUpgrade" ||
-        configuredFenceStrategy === "tilde"
-          ? configuredFenceStrategy
-          : "default";
-      const configuredAiModeEnabled = config.get<unknown>(
+      const aiModeEnabled = readEnumSetting(
+        config,
         "aiMode.enabled",
+        [true, false],
         false,
       );
-      const aiModeEnabled =
-        typeof configuredAiModeEnabled === "boolean"
-          ? configuredAiModeEnabled
-          : false;
       const configuredLineThreshold = config.get<unknown>(
         "largeFile.lineThreshold",
         1000,
@@ -82,26 +72,24 @@ export function activate(context: vscode.ExtensionContext) {
         configuredLineThreshold >= 1
           ? configuredLineThreshold
           : 1000;
-      const configuredLargeFilePromptEnabled = config.get<unknown>(
+      const largeFilePromptEnabled = readEnumSetting(
+        config,
         "largeFile.promptEnabled",
+        [true, false],
         false,
       );
-      const largeFilePromptEnabled =
-        typeof configuredLargeFilePromptEnabled === "boolean"
-          ? configuredLargeFilePromptEnabled
-          : false;
-      const configuredPathPlacement = config.get<unknown>(
+      const pathPlacement = readEnumSetting<MarkdownPathPlacement>(
+        config,
         "markdown.pathPlacement",
+        ["legacy", "header"],
         "legacy",
       );
-      const pathPlacement: MarkdownPathPlacement =
-        configuredPathPlacement === "header" ? "header" : "legacy";
-      const configuredOutsidePath = config.get<unknown>(
+      const outsideWorkspacePath = readEnumSetting<"absolute" | "basename">(
+        config,
         "outsideWorkspacePath",
+        ["absolute", "basename"],
         "absolute",
       );
-      const outsideWorkspacePath =
-        configuredOutsidePath === "basename" ? "basename" : "absolute";
 
       let relativePath =
         outsideWorkspacePath === "basename"
@@ -191,6 +179,23 @@ export function activate(context: vscode.ExtensionContext) {
   );
 
   context.subscriptions.push(disposable);
+}
+
+/**
+ * Reads a configuration value and falls back to the default unless the
+ * value is one of the allowed values (compatibility fallback for invalid
+ * user configuration).
+ */
+function readEnumSetting<T>(
+  config: vscode.WorkspaceConfiguration,
+  key: string,
+  allowedValues: readonly T[],
+  defaultValue: T,
+): T {
+  const value = config.get<unknown>(key, defaultValue);
+  return (allowedValues as readonly unknown[]).includes(value)
+    ? (value as T)
+    : defaultValue;
 }
 
 function readHeadTailSample(

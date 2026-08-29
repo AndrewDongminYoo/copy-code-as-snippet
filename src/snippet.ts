@@ -80,13 +80,18 @@ function createMarkdownSnippet(options: SnippetOptions): string {
   const fence = resolveFence(options.fenceStrategy, options.content);
 
   if (options.aiModeEnabled) {
-    const headerParts = [
-      options.includeFilePath ? `### File: ${options.relativePath}` : undefined,
-      `### Language: ${options.language}`,
-      options.rangeText ? `### Range: ${options.rangeText}` : undefined,
-    ].filter(Boolean);
+    const lead = options.includeFilePath
+      ? `File: ${options.relativePath}`
+      : `Language: ${options.language}`;
+    const details = [
+      options.includeFilePath ? options.language : undefined,
+      options.rangeText || undefined,
+    ].filter((part): part is string => Boolean(part));
+    const header =
+      details.length > 0
+        ? `### ${lead} (${details.join(", ")})`
+        : `### ${lead}`;
 
-    const header = headerParts.join("\n");
     return `${header}\n\n${fence}${options.language}\n${options.content}\n${fence}`;
   }
 

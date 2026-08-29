@@ -7,12 +7,11 @@ out/**
 node_modules/**
 src/**
 .node-version
+.markdownlint.yaml
 AGENTS.md
 .gitignore
-.yarnrc
 yarn.lock
 webpack.config.js
-vsc-extension-quickstart.md
 **/tsconfig.json
 **/eslint.config.mjs
 **/*.map

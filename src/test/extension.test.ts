@@ -1,6 +1,5 @@
 import * as assert from "assert";
 import * as vscode from "vscode";
-import * as path from "path";
 import * as sinon from "sinon";
 
 suite("Copy Code as Snippet Extension Test Suite", () => {
@@ -276,6 +275,34 @@ suite("Copy Code as Snippet Extension Test Suite", () => {
       activeTextEditorStub.restore();
     });
   }
+
+  test("Should ignore outsideWorkspacePath for files inside a workspace", async () => {
+    configurationValues["outsideWorkspacePath"] = "basename";
+    const document = {
+      uri: { fsPath: "/workspace/project/src/test.js" },
+      languageId: "javascript",
+      getText: () => 'const test = "Hello World";',
+      lineCount: 1,
+    };
+    const selection = new vscode.Selection(
+      new vscode.Position(0, 0),
+      new vscode.Position(0, 0),
+    );
+    const editor = { document, selection };
+
+    const activeTextEditorStub = sinon
+      .stub(vscode.window, "activeTextEditor")
+      .value(editor);
+
+    await vscode.commands.executeCommand("copy-code-as-snippet.copy");
+
+    assert.strictEqual(
+      clipboardSpy.firstCall.args[0],
+      '```javascript:src/test.js\nconst test = "Hello World";\n```',
+    );
+
+    activeTextEditorStub.restore();
+  });
 
   for (const [configuredPlacement, expectedSnippet] of [
     [
@@ -648,9 +675,7 @@ suite("Copy Code as Snippet Extension Test Suite", () => {
 
     const expectedSelectionContent = contentLines.slice(4, 9).join("\n");
     const expectedSnippet = [
-      "### File: src/index.ts",
-      "### Language: typescript",
-      "### Range: lines 5-9 (selection)",
+      "### File: src/index.ts (typescript, lines 5-9 (selection))",
       "",
       "```typescript",
       expectedSelectionContent,

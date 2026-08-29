@@ -74,9 +74,30 @@ describe("snippet formatting", () => {
         pathPlacement: "header",
       }),
       [
-        "### File: src/index.ts",
-        "### Language: typescript",
-        "### Range: lines 1-1 (full file)",
+        "### File: src/index.ts (typescript, lines 1-1 (full file))",
+        "",
+        "```typescript",
+        "const value = 1;",
+        "```",
+      ].join("\n"),
+    );
+  });
+
+  it("leads the AI header with the language when the file path is hidden", () => {
+    assert.strictEqual(
+      createSnippet({
+        format: SnippetFormat.Markdown,
+        language: "typescript",
+        relativePath: "src/index.ts",
+        content: "const value = 1;",
+        includeFilePath: false,
+        fenceStrategy: "default",
+        aiModeEnabled: true,
+        rangeText: "lines 1-1 (full file)",
+        pathPlacement: "legacy",
+      }),
+      [
+        "### Language: typescript (lines 1-1 (full file))",
         "",
         "```typescript",
         "const value = 1;",

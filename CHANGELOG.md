@@ -8,8 +8,9 @@ Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how 
 
 ### Changed
 
-- Simplified the AI mode header to a single Markdown heading with file, language, and range folded in.
-- The old three-line header failed markdownlint's MD041 and was inconsistent with the single-heading `header` path placement.
+- Simplified the AI mode header to a single Markdown heading led by the file path, or by the language when path inclusion is off, with the remaining metadata folded into parentheses.
+- The old three-line header was reformatted by Prettier, which separates consecutive headings with blank lines, and was inconsistent with the single-heading `header` path placement.
+  The heading level is unchanged, so this does not affect markdownlint's MD041.
 
 ## 1.3.0
 

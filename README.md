@@ -85,8 +85,8 @@ When `includeFilePath` is disabled, the heading leads with the language instead 
 When prompted on large files, choose a preset (e.g., Head 10 / Tail 10) or enter custom head/tail line counts.
 
 Files inside a workspace always use workspace-relative paths.
-For files outside a workspace, `copy-code-as-snippet.outsideWorkspacePath` defaults to `absolute` for compatibility.
-Choose `basename` to avoid copying parent directory names when sharing snippets, with the trade-off that the file location is no longer preserved.
+For files outside a workspace, `copy-code-as-snippet.outsideWorkspacePath` defaults to `basename` to avoid copying parent directory names.
+Choose `absolute` when the snippet must preserve the full file location.
 
 ## Why Use This Extension?
 
@@ -103,16 +103,16 @@ Visual Studio Code 1.106.1 or later.
 
 ## Extension Settings
 
-| Setting                                        | Type                                         | Default    | Description                                                                                                                      |
-| ---------------------------------------------- | -------------------------------------------- | ---------- | -------------------------------------------------------------------------------------------------------------------------------- |
-| `copy-code-as-snippet.includeFilePath`         | `boolean`                                    | `true`     | Include the resolved file path in Markdown and HTML snippets                                                                     |
-| `copy-code-as-snippet.format`                  | `string` (`markdown`, `plain`, `html`)       | `markdown` | Output format for the snippet                                                                                                    |
-| `copy-code-as-snippet.aiMode.enabled`          | `boolean`                                    | `false`    | Add a single Markdown heading led by the file path, or by the language when path inclusion is off, and use a language-only fence |
-| `copy-code-as-snippet.markdown.fenceStrategy`  | `string` (`default`, `autoUpgrade`, `tilde`) | `default`  | Keep triple backticks, use a backtick fence longer than the copied content, or always use `~~~`                                  |
-| `copy-code-as-snippet.markdown.pathPlacement`  | `string` (`legacy`, `header`)                | `legacy`   | Put the path in the opening fence or in a separate Markdown file header; AI mode keeps its own header layout                     |
-| `copy-code-as-snippet.outsideWorkspacePath`    | `string` (`absolute`, `basename`)            | `absolute` | Use the full path or only the file name outside a workspace; `basename` reduces exposed directory information                    |
-| `copy-code-as-snippet.largeFile.lineThreshold` | `integer` (minimum `1`)                      | `1000`     | Line count threshold for treating a file as large                                                                                |
-| `copy-code-as-snippet.largeFile.promptEnabled` | `boolean`                                    | `false`    | When enabled and over the threshold, prompt to copy the full file or a head/tail sample with preset or custom counts             |
+| Setting                                        | Type                                         | Default       | Description                                                                                                                      |
+| ---------------------------------------------- | -------------------------------------------- | ------------- | -------------------------------------------------------------------------------------------------------------------------------- |
+| `copy-code-as-snippet.includeFilePath`         | `boolean`                                    | `true`        | Include the resolved file path in Markdown and HTML snippets                                                                     |
+| `copy-code-as-snippet.format`                  | `string` (`markdown`, `plain`, `html`)       | `markdown`    | Output format for the snippet                                                                                                    |
+| `copy-code-as-snippet.aiMode.enabled`          | `boolean`                                    | `false`       | Add a single Markdown heading led by the file path, or by the language when path inclusion is off, and use a language-only fence |
+| `copy-code-as-snippet.markdown.fenceStrategy`  | `string` (`default`, `autoUpgrade`, `tilde`) | `autoUpgrade` | Keep triple backticks, use a backtick fence longer than the copied content, or always use `~~~`                                  |
+| `copy-code-as-snippet.markdown.pathPlacement`  | `string` (`legacy`, `header`)                | `legacy`      | Put the path in the opening fence or in a separate Markdown file header; AI mode keeps its own header layout                     |
+| `copy-code-as-snippet.outsideWorkspacePath`    | `string` (`absolute`, `basename`)            | `basename`    | Use the full path or only the file name outside a workspace; `basename` reduces exposed directory information                    |
+| `copy-code-as-snippet.largeFile.lineThreshold` | `integer` (minimum `1`)                      | `1000`        | Line count threshold for treating a file as large                                                                                |
+| `copy-code-as-snippet.largeFile.promptEnabled` | `boolean`                                    | `false`       | When enabled and over the threshold, prompt to copy the full file or a head/tail sample with preset or custom counts             |
 
 ## Known Issues
 

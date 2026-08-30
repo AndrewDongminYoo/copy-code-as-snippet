@@ -9,7 +9,7 @@ import {
 } from "../snippet";
 
 describe("snippet formatting", () => {
-  it("preserves the legacy Markdown default", () => {
+  it("preserves the legacy Markdown strategy", () => {
     assert.strictEqual(
       createSnippet({
         format: SnippetFormat.Markdown,

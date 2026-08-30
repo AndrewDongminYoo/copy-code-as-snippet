@@ -79,8 +79,8 @@
             "autoUpgrade",
             "tilde"
           ],
-          "default": "default",
-          "description": "Markdown fence style: keep default, auto-upgrade to four backticks when content contains ``` , or always use ~~~"
+          "default": "autoUpgrade",
+          "description": "Markdown fence style: always use triple backticks, use a backtick fence longer than copied content, or always use ~~~"
         },
         "copy-code-as-snippet.markdown.pathPlacement": {
           "type": "string",
@@ -97,7 +97,7 @@
             "absolute",
             "basename"
           ],
-          "default": "absolute",
+          "default": "basename",
           "description": "Use an absolute path or only the file name for documents outside a workspace"
         },
         "copy-code-as-snippet.largeFile.lineThreshold": {

@@ -54,7 +54,7 @@ export function activate(context: vscode.ExtensionContext) {
         config,
         "markdown.fenceStrategy",
         ["default", "autoUpgrade", "tilde"],
-        "default",
+        "autoUpgrade",
       );
       const aiModeEnabled = readEnumSetting(
         config,
@@ -88,7 +88,7 @@ export function activate(context: vscode.ExtensionContext) {
         config,
         "outsideWorkspacePath",
         ["absolute", "basename"],
-        "absolute",
+        "basename",
       );
 
       let relativePath =

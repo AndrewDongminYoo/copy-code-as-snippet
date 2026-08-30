@@ -87,6 +87,24 @@ suite("Copy Code as Snippet Extension Test Suite", () => {
       },
     ]);
     assert.deepStrictEqual(
+      Object.fromEntries(
+        Object.entries(configuration).map(([key, setting]) => [
+          key,
+          (setting as { default: unknown }).default,
+        ]),
+      ),
+      {
+        "copy-code-as-snippet.includeFilePath": true,
+        "copy-code-as-snippet.format": "markdown",
+        "copy-code-as-snippet.aiMode.enabled": false,
+        "copy-code-as-snippet.markdown.fenceStrategy": "autoUpgrade",
+        "copy-code-as-snippet.markdown.pathPlacement": "legacy",
+        "copy-code-as-snippet.outsideWorkspacePath": "basename",
+        "copy-code-as-snippet.largeFile.lineThreshold": 1000,
+        "copy-code-as-snippet.largeFile.promptEnabled": false,
+      },
+    );
+    assert.deepStrictEqual(
       configuration["copy-code-as-snippet.markdown.pathPlacement"].enum,
       ["legacy", "header"],
     );
@@ -97,10 +115,6 @@ suite("Copy Code as Snippet Extension Test Suite", () => {
     assert.deepStrictEqual(
       configuration["copy-code-as-snippet.outsideWorkspacePath"].enum,
       ["absolute", "basename"],
-    );
-    assert.strictEqual(
-      configuration["copy-code-as-snippet.outsideWorkspacePath"].default,
-      "absolute",
     );
     assert.strictEqual(
       configuration["copy-code-as-snippet.largeFile.lineThreshold"].type,
@@ -211,7 +225,7 @@ suite("Copy Code as Snippet Extension Test Suite", () => {
     workspaceFoldersStub.restore();
   });
 
-  test("Should use absolute path when no workspace folder is available", async () => {
+  test("Should use the basename when no workspace folder is available", async () => {
     const document = {
       uri: { fsPath: "/some/path/outside/workspace/test.js" },
       languageId: "javascript",
@@ -235,7 +249,7 @@ suite("Copy Code as Snippet Extension Test Suite", () => {
     await vscode.commands.executeCommand("copy-code-as-snippet.copy");
 
     const expectedSnippet =
-      '```javascript:/some/path/outside/workspace/test.js\nconst test = "Hello World";\n```';
+      '```javascript:test.js\nconst test = "Hello World";\n```';
     assert.strictEqual(clipboardSpy.calledOnce, true);
     assert.strictEqual(clipboardSpy.firstCall.args[0], expectedSnippet);
 
@@ -244,8 +258,8 @@ suite("Copy Code as Snippet Extension Test Suite", () => {
   });
 
   for (const [configuredPolicy, expectedPath] of [
-    ["basename", "test.js"],
-    ["invalid", "/some/private/path/test.js"],
+    ["absolute", "/some/private/path/test.js"],
+    ["invalid", "test.js"],
   ] as const) {
     test(`Should resolve outside-workspace paths for ${configuredPolicy} policy`, async () => {
       configurationValues["outsideWorkspacePath"] = configuredPolicy;
@@ -337,7 +351,7 @@ suite("Copy Code as Snippet Extension Test Suite", () => {
     });
   }
 
-  test("Should use compatibility defaults for invalid boolean settings", async () => {
+  test("Should use declared defaults for invalid boolean settings", async () => {
     configurationValues["includeFilePath"] = 0;
     configurationValues["aiMode.enabled"] = "true";
     configurationValues["largeFile.promptEnabled"] = "true";
@@ -345,7 +359,7 @@ suite("Copy Code as Snippet Extension Test Suite", () => {
     const document = {
       uri: { fsPath: "/workspace/project/src/test.ts" },
       languageId: "typescript",
-      getText: () => "const value = 1;",
+      getText: () => 'const value = "```";',
       lineCount: 1200,
     };
     const selection = new vscode.Selection(
@@ -366,14 +380,14 @@ suite("Copy Code as Snippet Extension Test Suite", () => {
     assert.strictEqual(showQuickPickStub.called, false);
     assert.strictEqual(
       clipboardSpy.firstCall.args[0],
-      "```typescript:src/test.ts\nconst value = 1;\n```",
+      '````typescript:src/test.ts\nconst value = "```";\n````',
     );
 
     activeTextEditorStub.restore();
     showQuickPickStub.restore();
   });
 
-  test("Should use compatibility defaults for invalid format settings", async () => {
+  test("Should use declared defaults for invalid format settings", async () => {
     configurationValues["format"] = "xml";
     configurationValues["markdown.fenceStrategy"] = 4;
 
@@ -440,9 +454,7 @@ suite("Copy Code as Snippet Extension Test Suite", () => {
     });
   }
 
-  test("Should upgrade markdown fence when autoUpgrade strategy is set", async () => {
-    configurationValues["markdown.fenceStrategy"] = "autoUpgrade";
-
+  test("Should auto-upgrade the Markdown fence by default", async () => {
     const document = {
       uri: { fsPath: "/workspace/project/src/test.js" },
       languageId: "javascript",

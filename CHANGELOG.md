@@ -6,11 +6,20 @@ Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how 
 
 ## Unreleased
 
+## 1.4.0 - 2026-08-30
+
 ### Changed
 
 - Simplified the AI mode header to a single Markdown heading led by the file path, or by the language when path inclusion is off, with the remaining metadata folded into parentheses.
 - The old three-line header was reformatted by Prettier, which separates consecutive headings with blank lines, and was inconsistent with the single-heading `header` path placement.
   The heading level is unchanged, so this does not affect markdownlint's MD041.
+- Changed the default Markdown fence strategy to `autoUpgrade` so copied code cannot close the surrounding fence.
+- Changed the default outside-workspace path policy to `basename` so snippets do not expose parent directory names unless the user selects `absolute`.
+
+### Fixed
+
+- Isolated Yarn Classic commands from ancestor `yarnPath` settings.
+- Excluded development-only `.claude` state from packaged VSIX files.
 
 ## 1.3.0
 

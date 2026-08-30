@@ -120,6 +120,13 @@ See or report current issues in [GitHub Issues](https://github.com/AndrewDongmin
 
 ## Release Notes
 
+### 1.4.0
+
+- Simplified opt-in AI mode output to one Markdown heading with file, language, and range metadata.
+- Made Markdown fences automatically grow past copied backtick runs by default.
+- Changed outside-workspace paths to use only the file name by default.
+- Improved VSIX packaging reliability by excluding development-only files.
+
 ### 1.3.0
 
 - Added opt-in standard Markdown path headers and basename-only paths for files outside workspaces

@@ -6,6 +6,12 @@ Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how 
 
 ## Unreleased
 
+## 1.4.1 - 2026-08-30
+
+### Changed
+
+- Load the README demo GIF from GitHub instead of bundling it in the VSIX.
+
 ## 1.4.0 - 2026-08-30
 
 ### Changed

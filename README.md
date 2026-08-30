@@ -2,7 +2,7 @@
 
 A Visual Studio Code extension that allows you to copy selected code or the entire content of a file as a Markdown, HTML, or plain text code snippet with language and file path information.
 
-![Demo](images/copy-as-code-snippet-demo.gif)
+![Demo](https://raw.githubusercontent.com/AndrewDongminYoo/copy-code-as-snippet/v1.4.0/images/copy-as-code-snippet-demo.gif)
 
 ## Features
 

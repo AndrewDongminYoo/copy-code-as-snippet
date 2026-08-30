@@ -13,6 +13,7 @@ src/**
 .markdownlint.yaml
 AGENTS.md
 .gitignore
+images/copy-as-code-snippet-demo.gif
 yarn.lock
 webpack.config.js
 **/tsconfig.json

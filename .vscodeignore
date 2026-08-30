@@ -1,4 +1,5 @@
 .trunk/**
+.claude/**
 .github/**
 .vscode/**
 .vscode-test/**
@@ -7,6 +8,8 @@ out/**
 node_modules/**
 src/**
 .node-version
+.yarn/**
+.yarnrc
 .markdownlint.yaml
 AGENTS.md
 .gitignore

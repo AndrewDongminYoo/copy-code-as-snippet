@@ -3,6 +3,7 @@
   "displayName": "Copy Code as Snippet",
   "description": "Extension that copies the contents of the current file to the clipboard in Markdown code block format",
   "version": "1.3.0",
+  "packageManager": "yarn@1.22.22",
   "publisher": "dongminyu",
   "author": "Dongmin Yu <ydm2790@gmail.com> (https://github.com/AndrewDongminYoo)",
   "license": "MIT",

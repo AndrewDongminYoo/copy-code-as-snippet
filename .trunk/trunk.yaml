@@ -17,7 +17,6 @@ runtimes:
 # This is the section where you manage your linters. (https://docs.trunk.io/check/configuration)
 lint:
   enabled:
-    - taplo@0.10.0
     - grype@0.118.0
     - pinact@4.1.1:
         commands: [lint, upgrade]

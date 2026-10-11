@@ -99,7 +99,7 @@ This extension is particularly useful for:
 
 ## Requirements
 
-Visual Studio Code 1.106.1 or later.
+Visual Studio Code 1.140.0 or later.
 
 ## Extension Settings
 

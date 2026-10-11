@@ -6,6 +6,13 @@ Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how 
 
 ## Unreleased
 
+## 1.5.0 - 2026-10-11
+
+### Changed
+
+- Raised the minimum supported VS Code version to 1.140.0.
+- Updated development dependencies, including TypeScript 6.0 and `@vscode/vsce` 4.0.
+
 ## 1.4.1 - 2026-08-30
 
 ### Changed

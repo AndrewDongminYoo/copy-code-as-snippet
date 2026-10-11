@@ -120,6 +120,10 @@ See or report current issues in [GitHub Issues](https://github.com/AndrewDongmin
 
 ## Release Notes
 
+### 1.5.0
+
+- Raised the minimum supported VS Code version to 1.140.0.
+
 ### 1.4.0
 
 - Simplified opt-in AI mode output to one Markdown heading with file, language, and range metadata.

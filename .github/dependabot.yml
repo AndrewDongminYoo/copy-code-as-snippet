@@ -4,6 +4,8 @@ updates:
     directory: /
     schedule:
       interval: weekly
+      day: monday
+      timezone: Asia/Seoul
     groups:
       github-actions:
         patterns: ["*"]

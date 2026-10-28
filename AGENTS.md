@@ -20,7 +20,7 @@
 
 ## Coding Style & Naming Conventions
 
-- TypeScript project targeting ES2022 modules; keep imports sorted logically and prefer `const` over `let` when possible.
+- TypeScript uses Node16 modules targeting ES2022; keep imports sorted logically and prefer `const` over `let` when possible.
 - Follow the existing two-space indentation and double-quoted strings shown in `src/extension.ts`; preserve trailing semicolons.
 - ESLint rules (see `eslint.config.mjs`) warn on missing curly braces, loose equality, and import naming; run `yarn lint` before pushing.
 - Use clear function and enum names (`createHtmlSnippet`, `SnippetFormat`) and keep helper logic small and pure.

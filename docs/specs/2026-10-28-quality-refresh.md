@@ -14,13 +14,15 @@ Preserve public settings, commands, the VS Code 1.140.0 minimum, source behavior
   Mocha uses `diff` 8.0.4 while Sinon keeps its required `diff` 9 line.
   Mocha's serializer and Azure Identity's MSAL retain the existing patched major lines because the requested older majors have no patched release.
 - Preserve Trunk CLI 1.25.0, plugin v1.11.0 and the existing managed runtimes unless a concrete compatibility failure requires a change.
-- Run TruffleHog without credential verification and retain its inherited JSON-to-SARIF parser.
-  A synthetic credential must still fail the configured scan.
+- Run TruffleHog without credential verification and use the repository-local filesystem JSONL-to-SARIF reader.
+  Keep findings at file level when decoded values have no literal location, and fail malformed conversion input without emitting clean SARIF.
+  Synthetic literal and encoded credentials must fail the configured scan, while clean input must pass.
 
 ## Acceptance
 
 - Pinact remains locked to `4.1.1` with `lint` and `upgrade`.
 - The full no-fix Trunk scan and declared project gates pass.
+- The reader's CLI tests pass independently of the extension, and configured Trunk controls reject literal and encoded synthetic findings before accepting clean input.
 - Changed manifests have package-manager-generated lockfiles under repository policy.
 - Advisory dispositions have specific evidence and affected knowledge claims are reconciled.
 - Extension Host tests use their `.vscode-test` profile directories and stub clipboard and configuration APIs.

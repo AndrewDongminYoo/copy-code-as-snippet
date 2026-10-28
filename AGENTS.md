@@ -17,6 +17,7 @@
 - `yarn test` runs `test:unit` (Node's built-in test runner) then `test:integration` (the VS Code Extension Host suite). `yarn watch-tests` recompiles tests on change.
 - See `package.json`'s `scripts` block for the full command list (includes `test:repeat` and `vsix`).
 - `yarn package` or `yarn vscode:prepublish` produces a production bundle (hidden source maps) suitable for publishing.
+- `python3 -m unittest discover -s .trunk/configs/tests -p 'test_*.py'` checks the repository-local TruffleHog filesystem JSONL reader without project dependencies.
 
 ## Coding Style & Naming Conventions
 
@@ -32,6 +33,7 @@
 - Prefer a unit test in `snippet.unit.ts` for pure formatting logic: fence selection, language detection, header layout, range labels.
 - Prefer an Extension Host test in `extension.test.ts` for VS Code wiring: clipboard writes, configuration flags, prompts, command registration.
 - Run `yarn test` before opening a PR; keep tests deterministic and avoid relying on the host editor state.
+- TruffleHog runs offline and uses `.trunk/configs/trufflehog_to_sarif.py` to retain decoded findings at file level when no literal location exists and reject malformed conversion input.
 
 ## Commit & Pull Request Guidelines
 

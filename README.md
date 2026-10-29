@@ -165,6 +165,9 @@ See or report current issues in [GitHub Issues](https://github.com/AndrewDongmin
 
 ## Development
 
+Use the Node.js major selected by `.node-version` and the repository-pinned Yarn Classic release.
+The TypeScript compiler stays on 6.0 because the installed TypeScript ESLint packages support versions below 6.1.
+
 ### Building the Extension
 
 ```bash

@@ -17,10 +17,11 @@
 - `yarn test` runs `test:unit` (Node's built-in test runner) then `test:integration` (the VS Code Extension Host suite). `yarn watch-tests` recompiles tests on change.
 - See `package.json`'s `scripts` block for the full command list (includes `test:repeat` and `vsix`).
 - `yarn package` or `yarn vscode:prepublish` produces a production bundle (hidden source maps) suitable for publishing.
+- `python3 -m unittest discover -s .trunk/configs/tests -p 'test_*.py'` checks the repository-local TruffleHog filesystem JSONL reader without project dependencies.
 
 ## Coding Style & Naming Conventions
 
-- TypeScript project targeting ES2022 modules; keep imports sorted logically and prefer `const` over `let` when possible.
+- TypeScript uses Node16 modules targeting ES2022; keep imports sorted logically and prefer `const` over `let` when possible.
 - Follow the existing two-space indentation and double-quoted strings shown in `src/extension.ts`; preserve trailing semicolons.
 - ESLint rules (see `eslint.config.mjs`) warn on missing curly braces, loose equality, and import naming; run `yarn lint` before pushing.
 - Use clear function and enum names (`createHtmlSnippet`, `SnippetFormat`) and keep helper logic small and pure.
@@ -32,6 +33,7 @@
 - Prefer a unit test in `snippet.unit.ts` for pure formatting logic: fence selection, language detection, header layout, range labels.
 - Prefer an Extension Host test in `extension.test.ts` for VS Code wiring: clipboard writes, configuration flags, prompts, command registration.
 - Run `yarn test` before opening a PR; keep tests deterministic and avoid relying on the host editor state.
+- TruffleHog runs offline and uses `.trunk/configs/trufflehog_to_sarif.py` to retain decoded findings at file level when no literal location exists and reject malformed conversion input.
 
 ## Commit & Pull Request Guidelines
 
@@ -43,3 +45,12 @@
 
 - User settings live in `package.json`'s `contributes.configuration` block. See `README.md`'s settings table for the current list and defaults.
 - When adding features, surface options through this config section and ensure defaults keep existing users unaffected.
+
+## Offline scanner resource boundary
+
+Run `python3 -B .trunk/configs/tests/test_trufflehog_to_sarif.py` for the 17 command-line reader regressions.
+Source context is limited to 1 MiB plus a sentinel byte per read and at most eight cached files.
+Oversized, unreadable, binary or decoded-only findings retain file-level diagnostics instead of disappearing.
+Native Trunk paths and Unicode code-point columns are preserved.
+The large-source and multi-file regressions measure traced Python allocations on ASCII fixtures; they do not establish a universal process RSS or I/O timeout bound.
+Malformed scanner input fails the gate, and candidate credentials are never verified with a provider.

@@ -28,3 +28,12 @@ Use the shared heavy-job slot and require a fresh one-minute load below 10 befor
 Keep extension source and tests, editor profiles, media and public extension contributions outside this maintenance change.
 The repository-local TruffleHog reader and its isolated Python tests are part of the security gate repair.
 Return any required repair outside the approved paths to the root agent.
+
+## Offline scanner resource boundary
+
+Run `python3 -B .trunk/configs/tests/test_trufflehog_to_sarif.py` for the 17 command-line reader regressions.
+Source context is limited to 1 MiB plus a sentinel byte per read and at most eight cached files.
+Oversized, unreadable, binary or decoded-only findings retain file-level diagnostics instead of disappearing.
+Native Trunk paths and Unicode code-point columns are preserved.
+The large-source and multi-file regressions measure traced Python allocations on ASCII fixtures; they do not establish a universal process RSS or I/O timeout bound.
+Malformed scanner input fails the gate, and candidate credentials are never verified with a provider.

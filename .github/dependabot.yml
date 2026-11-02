@@ -24,6 +24,12 @@ updates:
       day: monday
       timezone: Asia/Seoul
     open-pull-requests-limit: 3
+    ignore:
+      # PR #25: VS Code API types must match the minimum supported engine.
+      # Patch and security updates stay open; advance API minors with engines.vscode.
+      - dependency-name: "@types/vscode"
+        update-types:
+          - version-update:semver-minor
     groups:
       npm-minor-patch:
         patterns:

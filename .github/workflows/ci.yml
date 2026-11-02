@@ -39,6 +39,9 @@ jobs:
       # typescript 7 breakage that shipped to main
       - run: yarn compile
 
+      - name: Package VSIX
+        run: yarn vsix --out copy-code-as-snippet.vsix
+
   integration:
     name: Extension Host Test (${{ matrix.vscode-version }})
     runs-on: ubuntu-latest

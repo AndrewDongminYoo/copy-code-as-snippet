@@ -168,6 +168,10 @@ See or report current issues in [GitHub Issues](https://github.com/AndrewDongmin
 Use the Node.js major selected by `.node-version` and the repository-pinned Yarn Classic release.
 The TypeScript compiler stays on 6.0 because the installed TypeScript ESLint packages support versions below 6.1.
 
+Consumer-scoped development resolutions address [glob cancellation bypass](https://github.com/advisories/GHSA-3g3m-2fjr-6pw4) and [minimatch pattern amplification](https://github.com/advisories/GHSA-g3hv-75wg-m249).
+These substitutions cross upstream major ranges; verify lint, unit tests, minimum/stable Extension Host tests, coverage file discovery, and VSIX packaging when changing them.
+Remove a resolution once its consumer resolves a patched version without it.
+
 ### Building the Extension
 
 ```bash

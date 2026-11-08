@@ -140,12 +140,12 @@
     "@vscode/test-cli": "^0.0.15",
     "@vscode/test-electron": "^3.1.0",
     "@vscode/vsce": "^4.1.0",
-    "eslint": "^10.13.0",
+    "eslint": "^10.14.0",
     "sinon": "^22.1.0",
     "ts-loader": "^9.6.2",
     "typescript": "^6.0.3",
     "webpack": "^5.112.2",
-    "webpack-cli": "^7.2.3"
+    "webpack-cli": "^7.3.1"
   },
   "resolutions": {
     "**/@eslint/config-array/minimatch": "^11.0.1",

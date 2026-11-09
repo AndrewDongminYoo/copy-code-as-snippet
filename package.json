@@ -148,20 +148,11 @@
     "webpack-cli": "^7.3.1"
   },
   "resolutions": {
-    "**/@eslint/config-array/minimatch": "^11.0.1",
-    "**/@typescript-eslint/typescript-estree/minimatch": "^11.0.1",
-    "**/@vscode/test-cli/glob": "^14.0.2",
-    "**/@vscode/test-cli/minimatch": "^11.0.1",
-    "**/@vscode/vsce/minimatch": "^11.0.1",
-    "**/eslint/minimatch": "^11.0.1",
-    "**/mocha/diff": "^8.0.4",
-    "**/mocha/glob": "^14.0.2",
-    "**/mocha/minimatch": "^11.0.1",
-    "**/mocha/serialize-javascript": "^7.1.4",
-    "**/ajv/fast-uri": "^3.1.9",
-    "**/@azure/identity/@azure/msal-node": "^7.1.2",
-    "**/test-exclude/glob": "^14.0.2",
-    "**/test-exclude/minimatch": "^11.0.1",
-    "**/typed-rest-client/qs": "^6.17.0"
+    "@azure/msal-node": "^7.1.2",
+    "diff": "^8.0.4",
+    "glob": "^14.0.2",
+    "minimatch": "^11.0.1",
+    "qs": "^6.17.0",
+    "serialize-javascript": "^7.1.4"
   }
 }

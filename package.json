@@ -154,5 +154,10 @@
     "minimatch": "^11.0.1",
     "qs": "^6.17.0",
     "serialize-javascript": "^7.1.4"
+  },
+  "dependencies": {
+    "@azure/msal-node": "^7.1.2",
+    "glob": "^14.0.2",
+    "minimatch": "^11.0.1"
   }
 }
